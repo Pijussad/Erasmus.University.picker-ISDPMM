@@ -34,7 +34,7 @@ This script scrapes and analyzes course information for specified universities, 
    ```
 
 3. Set up your Anthropic API key:
-   - Sign up at [https://www.anthropic.com](https://www.anthropic.com/api)
+   - Sign up at https://www.anthropic.com/api
    - Replace the API key in `Erasmus_picker.py` with your actual key
 
 ## Usage
