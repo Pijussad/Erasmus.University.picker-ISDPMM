@@ -27,7 +27,7 @@ This script scrapes and analyzes course information for specified universities, 
    pip install -r requirements.txt
    ```
 3. Set up your Anthropic API key:
-   - Sign up at https://www.anthropic.com
+   - Sign up at https://www.anthropic.com/api
    - Replace the API key in `Erasmus_picker.py` with your actual key
 
 ## Usage
