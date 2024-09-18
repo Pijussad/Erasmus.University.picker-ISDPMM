@@ -61,10 +61,6 @@ Modify the `universities` list in `Erasmus_picker.py` to analyze different unive
 
 Contributions are welcome. Please submit a Pull Request.
 
-## License
-
-This project is open source and available under the [MIT License](LICENSE).
-
 ## Disclaimer
 
 For educational purposes only. Ensure compliance with all relevant terms of service.
