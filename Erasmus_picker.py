@@ -8,48 +8,24 @@ import time
 import random
 import json
 from tqdm import tqdm
-from urllib.parse import urljoin, unquote
+from urllib.parse import urljoin, unquote, quote_plus
 
 # Set up logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Set up Anthropic client
-client = anthropic.Anthropic(api_key="") # Add your API key here between the quotes
+client = anthropic.Anthropic(api_key="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")
 
 universities = [
-    "Maria Curie-Skłodowska University in Lublin",
-    "University of Maribor",
-    "University of Tartu"
+    {"name": "Universidade do Porto", "country": "Portugal", "language": "Portugese"}
+    #{"name": "Friedrich Schiller Universität Jena", "country": "Germany", "language": "German"},
+    #{"name": "University of Ljubljana", "country": "Slovenia", "language": "Slovenian"}
 ]
 
-def get_initial_search_url(university_name):
-    return f"https://www.google.com/search?q={university_name}+courses"
-
-def generate_ai_search_query(university_name, previous_results):
-    system_prompt = '''
-    You are an AI assistant tasked with generating search queries to find information about university courses.
-    Based on the previous search results and the university name, generate a new search query that might yield more specific or relevant results.
-    Focus on areas where the previous search didn't provide high confidence results.
-    '''
-    
-    user_prompt = f'''
-    University: {university_name}
-    Previous search results:
-    {json.dumps(previous_results, indent=2)}
-    
-    Generate a new search query to find more specific information about courses at this university.
-    '''
-    
-    response = client.messages.create(
-        model="claude-3-sonnet-20240229",
-        max_tokens=100,
-        system=system_prompt,
-        messages=[
-            {"role": "user", "content": user_prompt}
-        ]
-    )
-    return response.content[0].text.strip()
+SUBJECT = "Information systems testing and maintenance"  # Change this to search for a different subject (in English)
+CONFIDENCE_THRESHOLD = 70
+MAX_SEARCH_ATTEMPTS = 4
 
 def extract_url(href):
     if href.startswith("/url?q="):
@@ -68,178 +44,216 @@ def fetch_webpage_content(url):
 
 def extract_text_content(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
-    # Remove script and style elements
     for script in soup(["script", "style"]):
         script.decompose()
-    # Get text
-    text = soup.get_text()
-    # Break into lines and remove leading and trailing space on each
-    lines = (line.strip() for line in text.splitlines())
-    # Break multi-headlines into a line each
-    chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-    # Drop blank lines
-    text = '\n'.join(chunk for chunk in chunks if chunk)
-    return text[:5000]  # Limit to first 5000 characters
+    text = soup.get_text(separator=' ', strip=True)
+    return ' '.join(text.split())[:5000]  # Limit to first 3000 characters
 
-def scrape_university_courses(university_name, is_initial_search=True, previous_results=None):
-    if is_initial_search:
-        search_url = get_initial_search_url(university_name)
-    else:
-        search_query = generate_ai_search_query(university_name, previous_results)
-        search_url = f"https://www.google.com/search?q={search_query}"
-    
+def search_subject(query):
+    search_url = f"https://www.google.com/search?q={quote_plus(query)}"
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
     
-    logger.debug(f"Searching for {university_name} courses at URL: {search_url}")
+    logger.info(f"Searching with query: {query}")
     
     try:
         response = requests.get(search_url, headers=headers)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        logger.debug(f"Successfully retrieved search results for {university_name}")
-        
-        # Extract search results
         search_results = soup.find_all('div', class_='g')
-        course_info = []
+        subject_info = []
 
-        logger.debug(f"Found {len(search_results)} search results for {university_name}")
-
-        for index, result in enumerate(search_results[:3], 1):  # Limit to first 3 results
+        for result in search_results[:2]:  # Keep top 2 results
             title_elem = result.find('h3')
             link_elem = result.find('a')
 
             if title_elem and link_elem:
                 title = title_elem.text
                 link = extract_url(link_elem['href'])
-
-                # Fetch and extract content from the actual webpage
                 webpage_content = fetch_webpage_content(link)
                 if webpage_content:
                     extracted_text = extract_text_content(webpage_content)
-                    
-                    result_info = {
+                    subject_info.append({
                         "title": title,
                         "link": link,
                         "content": extracted_text
-                    }
-                    course_info.append(result_info)
+                    })
 
-                    logger.debug(f"Extracted information for result {index}:\nTitle: {title}\nLink: {link}\nContent length: {len(extracted_text)} characters")
-                else:
-                    logger.warning(f"Could not fetch content for {link}")
-            else:
-                logger.warning(f"Incomplete information for result {index} of {university_name}")
-
-        return course_info
+        return subject_info
     except requests.RequestException as e:
-        logger.error(f"Error scraping {university_name}: {e}")
+        logger.error(f"Error searching with query '{query}': {e}")
         return []
 
-def analyze_courses(university_name, courses_info):
-    system_prompt = '''
-You are an AI assistant analyzing university course offerings. Your task is to determine if the university offers courses in discrete math, literature, and medicine based on the provided information.
-For each subject (discrete math, literature, and medicine), provide:
+def analyze_subject(university_name, subject, subject_info, local_language):
+    system_prompt = f'''
+You are an AI assistant analyzing university course offerings. Your task is to determine if {university_name} offers courses related to {subject} based on the provided information. Consider only courses taught in English.
 
-Whether the subject is offered (Yes/No)
-Your confidence level in this assessment (0-100%)
-A brief explanation for your decision
+Consider the following:
+1. Direct mentions of subjects closely related to {subject} taught in English.
+2. Related courses or topics that might include content on {subject} taught in English.
+3. is it bachelor program?
 
-Base your assessment on the following criteria:
+Provide:
+1. Whether the subject is likely offered in English (Yes/No/Unclear)
+2. Your confidence level in this assessment (0-100%)
+3. A brief explanation for your decision (max 200 words)
 
-Look for specific mentions of courses or departments related to each field.
-Consider related terms (e.g., "computational mathematics" for discrete math, "English" for literature, "health sciences" for medicine).
-If there's no clear evidence, lean towards "No" but with lower confidence.
-
-Present your analysis in this format:
-Discrete Math:
-Offered: [Yes/No]
-Confidence: [0-100]%
-Explanation: [Brief reasoning]
-Literature:
-Offered: [Yes/No]
-Confidence: [0-100]%
-Explanation: [Brief reasoning]
-Medicine:
-Offered: [Yes/No]
-Confidence: [0-100]%
-Explanation: [Brief reasoning]
+If there's no clear evidence of English-language offerings, use "Unclear" with a lower confidence.
 '''
     user_prompt = f'''
-Analyze the following course information for {university_name}:
-{courses_info}
-Based on this information, does the university offer courses in discrete math, literature, and medicine?
-Respond using the format specified above.
+Analyze the following information about {subject} at {university_name}, considering only English-language offerings:
+{json.dumps(subject_info, indent=2)}
+
+Does the university likely offer courses related to {subject} in English?
+Respond using this format:
+Offered in English: [Yes/No/Unclear] + 60 words on what is the decision made also provide link on what decission was made
+Confidence: [0-100]%
+is it bachelor program?: [Yes/No/Unclear] + 60 words on what is the decision made
+Explanation: [Brief reasoning, max 100 words]
 '''
 
-    max_retries = 5
-    base_wait_time = 3
+    try:
+        response = client.messages.create(
+            model="claude-3-sonnet-20240229",
+            max_tokens=150,
+            system=system_prompt,
+            messages=[
+                {"role": "user", "content": user_prompt}
+            ]
+        )
+        return response.content[0].text.strip()
+    except Exception as e:
+        logger.error(f"Error analyzing {subject} for {university_name}: {e}")
+        return None
+    
+def get_confidence(analysis):
+    match = re.search(r'Confidence: (\d+)%', analysis)
+    return int(match.group(1)) if match else 0
 
-    for attempt in range(max_retries):
-        try:
-            logger.debug(f"Sending analysis request to Anthropic API for {university_name} (Attempt {attempt + 1})")
-            response = client.messages.create(
-                model="claude-3-sonnet-20240229",
-                max_tokens=200,
-                system=system_prompt,
-                messages=[
-                    {"role": "user", "content": user_prompt}
-                ]
-            )
-            analysis_result = response.content[0].text.strip()
-            logger.debug(f"Received analysis result for {university_name}: {analysis_result}")
-            return analysis_result
-        except anthropic.APIError as e:
-            if "rate_limit_error" in str(e):
-                wait_time = base_wait_time * (2 ** attempt)
-                logger.warning(f"Rate limit exceeded. Waiting for {wait_time} seconds before retrying...")
-                time.sleep(wait_time)
-            else:
-                logger.error(f"Anthropic API error: {e}")
-                return None
-        except Exception as e:
-            logger.error(f"Error analyzing courses for {university_name}: {e}")
-            return None
+def generate_additional_search_terms(university, subject, previous_queries):
+    system_prompt = f'''
+You are an AI assistant tasked with generating search terms to find information about university courses.
+Your goal is to create diverse and specific search queries that will uncover course offerings related to the given subject.
+The university is in {university['country']}, and the local language is {university['language']}.
 
-    logger.error(f"Failed to analyze courses for {university_name} after {max_retries} attempts")
-    return None
+Consider the following strategies:
+1. Generate queries in both English and {university['language']}.
+2. Use synonyms or related terms for the subject in both languages.
+3. Include academic terms like "syllabus", "curriculum", or "course catalog" in both languages.
+4. Specify relevant departments or faculties that might offer the courses.
+5. Include course level indicators (e.g., "undergraduate", "graduate", "bachelor", "master") in both languages.
+6. Add year or semester specifications if relevant.
+7. Include terms related to course registration or degree requirements in both languages.
+
+Analyze the previous queries to avoid repetition and focus on unexplored areas.
+'''
+    
+    user_prompt = f'''
+University: {university['name']}
+Subject: {subject}
+Previous search queries:
+{json.dumps(previous_queries, indent=2)}
+
+Generate 4 new, distinct search queries to find specific information about {subject} courses at this university.
+Provide 2 queries in English and 2 in {university['language']}.
+Each query should be a complete search phrase, not just additional terms.
+Ensure the queries are diverse and explore different aspects of course offerings.
+
+Respond with only the four new search queries, one per line, clearly indicating which are in English and which are in {university['language']}.
+'''
+
+    try:
+        response = client.messages.create(
+            model="claude-3-sonnet-20240229",
+            max_tokens=400,
+            system=system_prompt,
+            messages=[
+                {"role": "user", "content": user_prompt}
+            ]
+        )
+        return response.content[0].text.strip().split('\n')
+    except Exception as e:
+        logger.error(f"Error generating additional search terms: {e}")
+        return []
+
+def translate_subject(subject, target_language):
+    system_prompt = f"You are a translator. Translate the following academic subject from English to {target_language}."
+    user_prompt = f"Translate '{subject}' to {target_language}."
+
+    try:
+        response = client.messages.create(
+            model="claude-3-sonnet-20240229",
+            max_tokens=50,
+            system=system_prompt,
+            messages=[
+                {"role": "user", "content": user_prompt}
+            ]
+        )
+        return response.content[0].text.strip()
+    except Exception as e:
+        logger.error(f"Error translating subject to {target_language}: {e}")
+        return subject  # Return original subject if translation fails
+
+def process_university(university):
+    logger.info(f"Processing {university['name']}")
+    all_subject_info = []
+    previous_queries = []
+    
+    # Translate the subject to the local language
+    translated_subject = translate_subject(SUBJECT, university['language'])
+    
+    search_attempt = 0
+    confidence = 0
+    final_analysis = None
+    while confidence <= CONFIDENCE_THRESHOLD and search_attempt < MAX_SEARCH_ATTEMPTS:
+        if search_attempt == 0:
+            queries = [
+                f"{university['name']} {SUBJECT} course English language",
+                f"{university['name']} {translated_subject} course"
+            ]
+        else:
+            queries = generate_additional_search_terms(university, SUBJECT, previous_queries)
+        
+        for query in queries:
+            previous_queries.append(query)
+            logger.info(f"Search query: {query}")
+            
+            new_subject_info = search_subject(query)
+            all_subject_info.extend(new_subject_info)
+        
+        # Analyze based on cumulative information
+        analysis = analyze_subject(university['name'], SUBJECT, all_subject_info, university['language'])
+        confidence = get_confidence(analysis)
+        final_analysis = analysis  # Store the latest analysis
+        
+        search_attempt += 1
+        if confidence <= CONFIDENCE_THRESHOLD:
+            logger.info(f"Confidence level {confidence}% below threshold. Performing additional search for {university['name']}")
+    
+    return {
+        "subject_info": all_subject_info,
+        "analysis": final_analysis,
+        "queries": previous_queries
+    }
 
 def main():
     results = {}
 
     for university in tqdm(universities, desc="Analyzing universities"):
-        logger.info(f"Processing {university}")
-        courses_info = scrape_university_courses(university)
-        logger.debug(f"Scraped course information for {university}:\n{json.dumps(courses_info, indent=2)}")
-        
-        analysis = analyze_courses(university, courses_info)
-        confidence_levels = re.findall(r'Confidence: (\d+)%', analysis)
-        
-        # Continue searching until all confidence levels are above 90%
-        search_attempt = 1
-        while any(int(conf) <= 90 for conf in confidence_levels) and search_attempt < 5:  # Limit to 5 attempts
-            logger.info(f"Confidence levels not all above 90%. Performing additional search for {university}")
-            additional_courses_info = scrape_university_courses(university, is_initial_search=False, previous_results=courses_info)
-            courses_info.extend(additional_courses_info)
-            analysis = analyze_courses(university, courses_info)
-            confidence_levels = re.findall(r'Confidence: (\d+)%', analysis)
-            search_attempt += 1
-        
-        results[university] = {
-            "scraped_info": courses_info,
-            "analysis": analysis
-        }
-        time.sleep(random.uniform(1, 3))  # Random delay to avoid rate limiting
+        results[university['name']] = process_university(university)
+        time.sleep(random.uniform(1, 2))  # Random delay to avoid rate limiting
 
     # Save results to a file
-    with open('university_analysis_results.txt', 'w', encoding='utf-8') as f:
-        for university, data in results.items():
-            f.write(f"\n{university}:\n")
-            f.write(f"Scraped Information:\n{json.dumps(data['scraped_info'], indent=2)}\n")
+    with open('university_subject_analysis_results.txt', 'w', encoding='utf-8') as f:
+        f.write(f"Subject: {SUBJECT}\n\n")
+        for university_name, data in results.items():
+            f.write(f"{university_name}:\n")
+            f.write(f"Queries:\n{json.dumps(data['queries'], indent=2)}\n")
+            f.write(f"Subject Information:\n{json.dumps(data['subject_info'], indent=2)}\n")
             f.write(f"Analysis:\n{data['analysis']}\n")
             f.write("-" * 50 + "\n")
 
-    logger.info("Analysis complete. Results saved to university_analysis_results.txt")
+    logger.info("Analysis complete. Results saved to university_subject_analysis_results.txt")
 
 if __name__ == "__main__":
     main()
