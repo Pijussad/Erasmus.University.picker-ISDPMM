@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # Set up Anthropic client
-client = anthropic.Anthropic(api_key="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")
+client = anthropic.Anthropic(api_key="")
 
 universities = [
     {"name": "Universidade do Porto", "country": "Portugal", "language": "Portugese"}
