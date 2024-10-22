@@ -1,5 +1,7 @@
-# Ignore requirements.txt file
-university_subject_analysis_results.txt
+# Ignore all .txt files
+*.txt
+# But don't ignore requirements.txt
+!requirements.txt
 
 # Python-related files
 __pycache__/
@@ -21,6 +23,3 @@ Thumbs.db
 
 # Logs
 *.log
-
-# Output files
-university_subject_analysis_results.txt
