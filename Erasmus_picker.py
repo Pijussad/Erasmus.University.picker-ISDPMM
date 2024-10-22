@@ -1,29 +1,35 @@
 import os
 import re
 import requests
-from bs4 import BeautifulSoup
+import PyPDF2
+import io
 import anthropic
 import logging
 import time
 import random
 import json
+from bs4 import BeautifulSoup
 from tqdm import tqdm
 from urllib.parse import urljoin, unquote, quote_plus
+from dotenv import load_dotenv  # Add this import
+
+# Load environment variables
+load_dotenv()
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Set up Anthropic client
-client = anthropic.Anthropic(api_key="")
+client = anthropic.Anthropic(
+    api_key=os.getenv('ANTHROPIC_API_KEY')
+)
 
 universities = [
     {"name": "Universidade do Porto", "country": "Portugal", "language": "Portugese"}
-    #{"name": "Friedrich Schiller Universität Jena", "country": "Germany", "language": "German"},
-    #{"name": "University of Ljubljana", "country": "Slovenia", "language": "Slovenian"}
 ]
 
-SUBJECT = "Information systems testing and maintenance"  # Change this to search for a different subject (in English)
+SUBJECT = "Information systems testing and maintenance"
 CONFIDENCE_THRESHOLD = 70
 MAX_SEARCH_ATTEMPTS = 4
 
@@ -32,26 +38,60 @@ def extract_url(href):
         return unquote(href.split("/url?q=")[1].split("&")[0])
     return href
 
+def extract_pdf_content(pdf_url):
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+        response = requests.get(pdf_url, headers=headers, timeout=10)
+        response.raise_for_status()
+        
+        # Read PDF content from the response
+        pdf_file = io.BytesIO(response.content)
+        pdf_reader = PyPDF2.PdfReader(pdf_file)
+        
+        # Extract text from all pages
+        text_content = []
+        for page in pdf_reader.pages:
+            text_content.append(page.extract_text())
+        
+        # Join all pages and limit the content
+        full_text = ' '.join(text_content)
+        return ' '.join(full_text.split())[:5000]  # Limit to first 5000 characters
+        
+    except Exception as e:
+        logger.error(f"Error extracting PDF content from {pdf_url}: {e}")
+        return None
+
 def fetch_webpage_content(url):
     try:
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
+        
+        # Check if the URL points to a PDF
+        content_type = response.headers.get('content-type', '').lower()
+        if 'application/pdf' in content_type:
+            return extract_pdf_content(url)
+        
         return response.text
     except requests.RequestException as e:
         logger.error(f"Error fetching {url}: {e}")
         return None
 
 def extract_text_content(html_content):
+    # If the content is already text (from PDF), return it
+    if isinstance(html_content, str) and not html_content.strip().startswith('<'):
+        return html_content
+    
+    # Otherwise, parse HTML
     soup = BeautifulSoup(html_content, 'html.parser')
     for script in soup(["script", "style"]):
         script.decompose()
     text = soup.get_text(separator=' ', strip=True)
-    return ' '.join(text.split())[:5000]  # Limit to first 3000 characters
+    return ' '.join(text.split())[:5000]
 
 def search_subject(query):
     search_url = f"https://www.google.com/search?q={quote_plus(query)}"
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
     
     logger.info(f"Searching with query: {query}")
     
@@ -63,20 +103,26 @@ def search_subject(query):
         search_results = soup.find_all('div', class_='g')
         subject_info = []
 
-        for result in search_results[:2]:  # Keep top 2 results
+        for result in search_results[:3]:  # Increased to top 3 results
             title_elem = result.find('h3')
             link_elem = result.find('a')
 
             if title_elem and link_elem:
                 title = title_elem.text
                 link = extract_url(link_elem['href'])
+                
+                # Skip if not PDF or HTML
+                if not (link.lower().endswith('.pdf') or any(ext in link.lower() for ext in ['.htm', '.html', ''])):
+                    continue
+                
                 webpage_content = fetch_webpage_content(link)
                 if webpage_content:
                     extracted_text = extract_text_content(webpage_content)
                     subject_info.append({
                         "title": title,
                         "link": link,
-                        "content": extracted_text
+                        "content": extracted_text,
+                        "type": "pdf" if link.lower().endswith('.pdf') else "html"
                     })
 
         return subject_info
@@ -125,7 +171,7 @@ Explanation: [Brief reasoning, max 100 words]
     except Exception as e:
         logger.error(f"Error analyzing {subject} for {university_name}: {e}")
         return None
-    
+
 def get_confidence(analysis):
     match = re.search(r'Confidence: (\d+)%', analysis)
     return int(match.group(1)) if match else 0
@@ -139,11 +185,9 @@ The university is in {university['country']}, and the local language is {univers
 Consider the following strategies:
 1. Generate queries in both English and {university['language']}.
 2. Use synonyms or related terms for the subject in both languages.
-3. Include academic terms like "syllabus", "curriculum", or "course catalog" in both languages.
-4. Specify relevant departments or faculties that might offer the courses.
-5. Include course level indicators (e.g., "undergraduate", "graduate", "bachelor", "master") in both languages.
-6. Add year or semester specifications if relevant.
-7. Include terms related to course registration or degree requirements in both languages.
+3. Include academic terms like "syllabus", "curriculum", "course catalog" in both languages.
+4. Add "PDF" to some queries to find course catalogs and syllabi.
+5. Include terms related to course registration or degree requirements in both languages.
 
 Analyze the previous queries to avoid repetition and focus on unexplored areas.
 '''
@@ -155,11 +199,10 @@ Previous search queries:
 {json.dumps(previous_queries, indent=2)}
 
 Generate 4 new, distinct search queries to find specific information about {subject} courses at this university.
+Include at least one query specifically targeting PDF documents.
 Provide 2 queries in English and 2 in {university['language']}.
-Each query should be a complete search phrase, not just additional terms.
-Ensure the queries are diverse and explore different aspects of course offerings.
 
-Respond with only the four new search queries, one per line, clearly indicating which are in English and which are in {university['language']}.
+Respond with only the four new search queries, one per line.
 '''
 
     try:
@@ -192,14 +235,13 @@ def translate_subject(subject, target_language):
         return response.content[0].text.strip()
     except Exception as e:
         logger.error(f"Error translating subject to {target_language}: {e}")
-        return subject  # Return original subject if translation fails
+        return subject
 
 def process_university(university):
     logger.info(f"Processing {university['name']}")
     all_subject_info = []
     previous_queries = []
     
-    # Translate the subject to the local language
     translated_subject = translate_subject(SUBJECT, university['language'])
     
     search_attempt = 0
@@ -208,8 +250,9 @@ def process_university(university):
     while confidence <= CONFIDENCE_THRESHOLD and search_attempt < MAX_SEARCH_ATTEMPTS:
         if search_attempt == 0:
             queries = [
-                f"{university['name']} {SUBJECT} course English language",
-                f"{university['name']} {translated_subject} course"
+                f"{university['name']} {SUBJECT} course English language filetype:pdf",
+                f"{university['name']} {translated_subject} course pdf",
+                f"{university['name']} {SUBJECT} course English language"
             ]
         else:
             queries = generate_additional_search_terms(university, SUBJECT, previous_queries)
@@ -221,10 +264,9 @@ def process_university(university):
             new_subject_info = search_subject(query)
             all_subject_info.extend(new_subject_info)
         
-        # Analyze based on cumulative information
         analysis = analyze_subject(university['name'], SUBJECT, all_subject_info, university['language'])
         confidence = get_confidence(analysis)
-        final_analysis = analysis  # Store the latest analysis
+        final_analysis = analysis
         
         search_attempt += 1
         if confidence <= CONFIDENCE_THRESHOLD:
@@ -241,7 +283,7 @@ def main():
 
     for university in tqdm(universities, desc="Analyzing universities"):
         results[university['name']] = process_university(university)
-        time.sleep(random.uniform(1, 2))  # Random delay to avoid rate limiting
+        time.sleep(random.uniform(1, 2))
 
     # Save results to a file
     with open('university_subject_analysis_results.txt', 'w', encoding='utf-8') as f:
