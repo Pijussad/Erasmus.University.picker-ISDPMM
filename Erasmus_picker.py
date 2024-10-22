@@ -11,13 +11,19 @@ import json
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 from urllib.parse import urljoin, unquote, quote_plus
+from dotenv import load_dotenv  # Add this import
+
+# Load environment variables
+load_dotenv()
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Set up Anthropic client
-client = anthropic.Anthropic(api_key="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")
+client = anthropic.Anthropic(
+    api_key=os.getenv('ANTHROPIC_API_KEY')
+)
 
 universities = [
     {"name": "Universidade do Porto", "country": "Portugal", "language": "Portugese"}
