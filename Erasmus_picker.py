@@ -13,6 +13,11 @@ from tqdm import tqdm
 from urllib.parse import urljoin, unquote, quote_plus
 from dotenv import load_dotenv  # Add this import
 
+# Firebase imports
+import firebase_admin
+from firebase_admin import firestore, credentials
+from google.cloud.firestore_v1.base_query import FieldFilter
+
 # Load environment variables
 load_dotenv()
 
@@ -25,9 +30,24 @@ client = anthropic.Anthropic(
     api_key=os.getenv('ANTHROPIC_API_KEY')
 )
 
-universities = [
-    {"name": "Universidade do Porto", "country": "Portugal", "language": "Portugese"}
-]
+# Set up Firebase client
+cred = credentials.Certificate('key.json')
+app = firebase_admin.initialize_app(cred)
+db = firestore.client()
+
+# Get universities from Firestore
+# !!! Country name in lithuanian !!!
+docs = (
+      db.collection("universities")
+      .where(filter=FieldFilter("salis", "==", "Latvija"))
+      .stream()
+   )
+
+universities = [{"name": doc['universitetas'], "country": doc['salis'], "language": doc['kalbos'][0]} for doc in [doc.to_dict() for doc in docs]]
+
+#universities = [
+#    {"name": "Universidade do Porto", "country": "Portugal", "language": "Portugese"}
+#]
 
 SUBJECT = "Information systems testing and maintenance"
 CONFIDENCE_THRESHOLD = 70
@@ -286,14 +306,18 @@ def main():
         time.sleep(random.uniform(1, 2))
 
     # Save results to a file
-    with open('university_subject_analysis_results.txt', 'w', encoding='utf-8') as f:
-        f.write(f"Subject: {SUBJECT}\n\n")
-        for university_name, data in results.items():
-            f.write(f"{university_name}:\n")
-            f.write(f"Queries:\n{json.dumps(data['queries'], indent=2)}\n")
-            f.write(f"Subject Information:\n{json.dumps(data['subject_info'], indent=2)}\n")
-            f.write(f"Analysis:\n{data['analysis']}\n")
-            f.write("-" * 50 + "\n")
+    #with open('university_subject_analysis_results.txt', 'w', encoding='utf-8') as f:
+    #    f.write(f"Subject: {SUBJECT}\n\n")
+    #    for university_name, data in results.items():
+    #        f.write(f"{university_name}:\n")
+    #        f.write(f"Queries:\n{json.dumps(data['queries'], indent=2)}\n")
+    #        f.write(f"Subject Information:\n{json.dumps(data['subject_info'], indent=2)}\n")
+    #        f.write(f"Analysis:\n{data['analysis']}\n")
+    #        f.write("-" * 50 + "\n")
+
+    # Save results to Firestore
+    for university_name, data in results.items():
+        db.collection('Placeholder').document(university_name).set(data, merge=True)
 
     logger.info("Analysis complete. Results saved to university_subject_analysis_results.txt")
 

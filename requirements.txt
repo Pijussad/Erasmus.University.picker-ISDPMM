@@ -3,6 +3,7 @@ anthropic==0.36.2  # Updated to latest version
 requests==2.31.0
 beautifulsoup4==4.12.3
 tqdm==4.66.2
+python-dotenv==1.0.1
 
 # HTTP client dependencies
 httpx==0.26.0
@@ -18,9 +19,13 @@ certifi==2024.2.2
 charset-normalizer==3.3.2
 idna==3.6
 urllib3==2.2.1
+PyPDF2==3.0.1
 
 # Additional dependencies required by new anthropic version
 pydantic>=1.9.0,<3
 tokenizers>=0.13.0
 typing-extensions>=4.7,<5
 jiter>=0.4.0,<1
+
+# Firebase client
+firebase-admin==6.5.0
