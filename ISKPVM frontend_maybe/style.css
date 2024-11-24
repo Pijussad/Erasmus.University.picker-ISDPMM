@@ -1,0 +1,247 @@
+/*------------------------------------*/
+/*  1. Common Styles (Global)         */
+/*------------------------------------*/
+
+:root {
+    --background-color: #f8f9fa;
+    --container-bg-color: #ffffff;
+    --form-panel-bg-color: #e2e2e2;
+    --form-group-bg-color: #d0d0d0;
+    --form-group-border-color: black;
+    --text-color: black;
+
+    --page_background-color: #f8f9fa;
+    --header-background-color: #f8f9fa;
+    --header-text-color: black;
+    --info-box-paiesku: #dee2e6;
+    --content-placeholder-card-color: rgb(187, 187, 189);
+    --content-placeholder-card-text-color: #6c757d;
+    --filtruoti-btn-color: #411c69;
+}
+
+body {
+    background-color: var(--background-color);
+    margin: 0;
+    padding: 0;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: var(--header-background-color);
+    color: var(--header-text-color);
+    border-bottom: 1px solid #ddd;
+}
+
+.brands {
+    font-size: 1.3rem;
+    color: black; /* Black text color */
+    text-decoration: none; /* Remove underline */
+}
+
+.brands:link,
+.brands:visited,
+.brands:hover,
+.brands:active {
+    color: black; /* Keep text color black for all states */
+    text-decoration: none; /* Remove underline for all states */
+}
+
+.buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.form-group label {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-group {
+    display: block;
+    padding: 0.3rem;
+    margin: 0.3rem;
+    background-color: var(--form-group-bg-color);
+    border-radius: 0.3rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.slider-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/*------------------------------------*/
+/*  2. Filtering Page Styles          */
+/*------------------------------------*/
+
+#filtering-page .container {
+    margin: 2rem auto;
+    max-width: 1200px;
+    background: var(--container-bg-color);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+}
+
+#filtering-page .form-panel {
+    flex: 1;
+    padding: 1rem;
+    background-color: var(--form-panel-bg-color);
+    border-radius: 1rem;
+    margin: 0.5rem;
+}
+
+#filtering-page .form-container {
+    display: flex;
+    gap: 1rem;
+}
+
+#filtering-page #livingCosts {
+    width: 80%;
+}
+
+@media (max-width: 768px) {
+    #filtering-page .form-container {
+        flex-direction: column;
+    }
+
+    #filtering-page .form-panel {
+        margin: 0.5rem 0;
+    }
+}
+
+/*------------------------------------*/
+/*  3. Main Page Styles               */
+/*------------------------------------*/
+
+
+
+#main-page .main-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+
+#main-page .main-container {
+    max-width: 800px;
+    text-align: center;
+    margin-top: 3rem;
+}
+
+#main-page .title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+#main-page .title span {
+    color: #5bc0de;
+}
+
+#main-page .btn-filter {
+    background-color: var(--filtruoti-btn-color);
+}
+
+#main-page .info-box {
+    border: 1px solid var(--info-box-paiesku);
+    border-radius: 0.25rem;
+    padding: 1rem;
+    min-height: 100px;
+}
+
+#main-page .info-box-title {
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+#main-page .info-box-content {
+    flex-direction: column;
+}
+
+#main-page .card-placeholder {
+    border: 1px solid var(--content-placeholder-card-color);
+    padding: 1rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    border-radius: 0.25rem;
+    color: var(--content-placeholder-card-text-color);
+    background-color: var(--content-placeholder-card-color);
+    box-shadow: 5px 5px;
+}
+
+/*------------------------------------*/
+/*  4. Profile Management Page Styles */
+/*------------------------------------*/
+
+#profile-page .profile-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    background: var(--container-bg-color);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+#profile-page .profile-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+#profile-page .profile-header img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+}
+
+#profile-page .profile-header h2 {
+    font-size: 1.25rem;
+    margin: 0;
+    font-weight: bold;
+}
+
+#profile-page .form-group-settings {
+    display: flex;
+    flex-direction: row;
+    padding: 0.3rem;
+    margin: 0.3rem;
+    background-color: var(--background-color);
+    border-radius: 0.3rem;
+
+}
+
+#profile-page .delete-account {
+    color: #dc3545;
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+#profile-page .delete-account:hover {
+    text-decoration: underline;
+}
+
+#profile-page .settings-form {
+    display: flex;
+    flex-direction: column;
+}
+
+#profile-page .form-group-settings > label, input {
+    padding-right: 2rem;
+    text-wrap: nowrap;
+}
+
+#profile-page .form-group-settings > label {
+    margin-top: 0.3rem;
+}
