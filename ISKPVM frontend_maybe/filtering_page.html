@@ -9,7 +9,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     
     <link rel="stylesheet" href="style.css">
-    <script src="filtering_page.js"></script>
+    <script type="module" src="filtering_page.js"></script>
 
     
 </head>
@@ -24,7 +24,7 @@
         <!-- Buttons -->
         <div class="buttons">
             <button class="btn btn-outline-info btn-sm duk">D.U.K</button>
-            <button class="btn btn-success btn-sm">Prisijungti</button>
+            <a href="dumy_login_to_vu.html"><button class="btn btn-success btn-sm">Prisijungti</button></a>
             
         </div>
     </div>
@@ -41,7 +41,8 @@
                     <div class="form-group">
                         <label for="faculty">Fakultetas</label>
                         <select class="form-select" id="faculty">
-                            <option selected>Matematikos ir informatikos fakultetas</option>
+                            <option selected> - </option>
+                            <option >Matematikos ir informatikos fakultetas</option>
                         </select>
                     </div>
 
@@ -49,7 +50,8 @@
                     <div class="form-group">
                         <label for="program">Studijų programa</label>
                         <select class="form-select" id="program">
-                            <option selected>Duomenų mokslas</option>
+                            <option selected> - </option>
+                            <option >Duomenų mokslas</option>
                         </select>
                     </div>
 
@@ -57,7 +59,8 @@
                     <div class="form-group">
                         <label for="studyType">Studijų tipas</label>
                         <select class="form-select" id="studyType">
-                            <option selected>Bakalauro</option>
+                            <option selected> - </option>
+                            <option >Bakalauro</option>
                         </select>
                     </div>
 
@@ -65,7 +68,8 @@
                     <div class="form-group">
                         <label for="semester">Semestras</label>
                         <select class="form-select" id="semester">
-                            <option selected>III - vasaros</option>
+                            <option selected> - </option>
+                            <option >III - vasaros</option>
                         </select>
                     </div>
                 
@@ -89,7 +93,8 @@
                         <div class="form-group-inner1">
                             <label for="country">Šalis</label>
                             <select class="form-select" id="country">
-                                <option selected>Latvija</option>
+                                <option selected> - </option>
+                                <option >Latvija</option>
                             </select>
                         </div>
 
@@ -97,7 +102,8 @@
                         <div class="form-group-inner1">
                             <label for="city">Miestas</label>
                             <select class="form-select" id="city">
-                                <option selected>Bakalauro</option>
+                                <option selected> - </option>
+                                <option >Bakalauro</option>
                             </select>
                         </div>
                     </div>
@@ -114,7 +120,8 @@
                     <div class="form-group">
                         <label for="region">Regionas</label>
                         <select class="form-select" id="region">
-                            <option selected>Europa - Baltijos šalys</option>
+                            <option selected> - </option>
+                            <option >Europa - Baltijos šalys</option>
                         </select>
                     </div>
 
@@ -127,7 +134,8 @@
                     <div class="form-group">
                         <label for="university">Universitetas</label>
                         <select class="form-select" id="university">
-                            <option selected>Liepajas Universitetas</option>
+                            <option selected> - </option>
+                            <!-- <option >Liepajas Universitetas</option> -->
                         </select>
                     </div>
 
@@ -135,7 +143,9 @@
                     <div class="form-group">
                         <label for="language">Studijų kalba</label>
                         <select class="form-select" id="language">
+                            
                             <option selected>Anglų</option>
+                            <option>English</option>
                         </select>
                     </div>
 
@@ -170,6 +180,8 @@
             </div>
             
         </form>
+
+        <div id="resOutput" class="form-panel"></div>
     </div>
 
 

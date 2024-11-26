@@ -99,6 +99,16 @@ body {
     margin: 0.5rem;
 }
 
+
+/* test TODO */
+#filtering-page .form-panel-test {
+    flex: 1;
+    padding: 1rem;
+    background-color: rgb(238, 238, 238);
+    border-radius: 1rem;
+    margin: 0.5rem;
+}
+
 #filtering-page .form-container {
     display: flex;
     gap: 1rem;
