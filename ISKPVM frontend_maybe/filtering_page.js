@@ -28,10 +28,12 @@ async function queryUniversities(filters) {
                 if (field === "kalba"){
                     queries.push(where("kalbos", "array-contains", value));
                 }
+                else if (field === "fakultetas"){
+                    queries.push(where(field, "==", value));
+                }
                 else {
                     queries.push(where(field, "==", value));
                 }
-                
             }
         }
 
@@ -82,7 +84,7 @@ function format_and_output(res){
         a.push("<pre class=\"form-panel-test\">" + uniObjToString(univ) + "</pre>")
     });
 
-    console.log(a);
+    //console.log(a);
 
     let out = $("#resOutput");
     out.html(a);
@@ -140,6 +142,29 @@ $(document).ready(function () {
     });
 });
 
+
+
+
+
+
+// Isikelti visus duom?
+// is duomenu susirasti unique rodilkius
+// juos sukelti i html.
+
+
+const filters = {
+    fakultetas: _fakultetas,
+    programa: _programa,
+    studijuTipas: _studijuTipas,
+    semestras: _semestras,
+    salis: _salis,
+    miestas: _miestas,
+    regionas: _regionas,
+    universitetas: _universitetas,
+    kalba: _kalba
+    // qsIvertinimas: _qsIvertinimas,
+    // pragyvenimoIslaidos: _pragyvenimoIslaidos
+};
 
 
 
