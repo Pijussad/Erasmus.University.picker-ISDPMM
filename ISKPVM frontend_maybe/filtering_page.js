@@ -127,7 +127,7 @@ $(document).ready(function () {
             // pragyvenimoIslaidos: _pragyvenimoIslaidos
         };
 
-        console.log(filters);
+        //console.log(filters);
 
         const res = await queryUniversities(filters);
 
@@ -155,8 +155,15 @@ $(document).ready(function () {
 function find_unique_and_populate_html(res) {
     // find unique universities
 
-    console.log("test all info", res);
+    //console.log("test all info", res);
 
+
+    //Language
+    const _language = $('#language');
+    const uniqueLanguage = [...new Set(res.flatMap(res => res.kalbos))];
+    uniqueLanguage.forEach((el) => {
+        _language.append(`<option>${el}</option>`)
+    });
 
     //Countrys
     const _countrys = $('#country');
