@@ -152,19 +152,57 @@ $(document).ready(function () {
 // juos sukelti i html.
 
 
-const filters = {
-    fakultetas: _fakultetas,
-    programa: _programa,
-    studijuTipas: _studijuTipas,
-    semestras: _semestras,
-    salis: _salis,
-    miestas: _miestas,
-    regionas: _regionas,
-    universitetas: _universitetas,
-    kalba: _kalba
+function find_unique_and_populate_html(res) {
+    // find unique universities
+
+    console.log("test all info", res);
+
+
+    //Countrys
+    const _countrys = $('#country');
+    const uniqueCountrys = [...new Set(res.map(res => res.salis))];
+    //console.log("Unique ids", uniqueCountrys);
+    uniqueCountrys.forEach((el) => {
+        _countrys.append(`<option>${el}</option>`)
+    });
+
+    // University
+    const _universitys = $('#university');
+    const uniqueUniversitys = [...new Set(res.map(res => res.universitetas))];
+    uniqueUniversitys.forEach((el) => {
+        _universitys.append(`<option>${el}</option>`)
+    });
+
+
+
+}
+
+const emptyfilters = {
+    fakultetas: "-",
+    programa: "-",
+    studijuTipas: "-",
+    semestras: "-",
+    salis: "-",
+    miestas: "-",
+    regionas: "-",
+    universitetas: "-",
+    kalba: "-"
     // qsIvertinimas: _qsIvertinimas,
     // pragyvenimoIslaidos: _pragyvenimoIslaidos
 };
+
+
+let all_the_info = []
+const res = await queryUniversities(emptyfilters);
+
+if (res.length != 0){
+    format_and_output(res);
+}
+else {
+    console.log("Failed getting query results !!!");
+}
+
+find_unique_and_populate_html(res)
 
 
 
