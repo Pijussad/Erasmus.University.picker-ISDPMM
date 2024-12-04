@@ -196,7 +196,7 @@ const emptyfilters = {
     kalba: "-"
     // qsIvertinimas: _qsIvertinimas,
     // pragyvenimoIslaidos: _pragyvenimoIslaidos
-};
+};///
 
 
 let all_the_info = []
