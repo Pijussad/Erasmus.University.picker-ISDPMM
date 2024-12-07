@@ -5,10 +5,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Erasmus Gidas</title>
-    
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/flatly/bootstrap.min.css" rel="stylesheet">
+    <link rel="icon" href="/ISKPVM frontend_maybe/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
 </head>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const prisijungtiButton = document.getElementById('prisijungti');
+        prisijungtiButton.addEventListener('click', function() {
+            const profilisButton = document.getElementById('profilis');
+            if (profilisButton.style.display == 'flex') {
+                profilisButton.style.display = 'none'; 
+            } else {
+                profilisButton.style.display = 'flex'; 
+            }
+        });
+    });
+    
+</script>
 
 <body id="main-page">
     <!-- Header Section -->
@@ -19,20 +34,25 @@
         <!-- Buttons -->
         <div class="buttons">
             <button class="btn btn-outline-info btn-sm duk">D.U.K</button>
-            <a href="profilio_valdymas.html"><button class="btn btn-info btn-sm">Profilis</button></a>
-            <a href="dumy_login_to_vu.html"><button class="btn btn-success btn-sm">Prisijungti</button></a>
+            <a href="profilio_valdymas.html">
+                <button id="profilis" class="btn btn-info btn-sm">
+                    <img width="16" height="16" src="https://img.icons8.com/forma-light/64/user.png" alt="user"/>
+                </button>
+            </a>
+            <!-- <a href="dumy_login_to_vu.html"> -->
+            <button id="prisijungti" class="btn btn-success btn-sm">Prisijungti</button>
+            <!-- </a> -->
         </div>
     </div>
 
     <!-- Main Content -->
     <div class="main-container">
 
-        <h1 class="title">Kur <span>norite keliauti?</span></h1>
+        <h1 class="title roboto-bold">Kur norite keliauti?</h1>
         <div class="mb-3">
             <input type="text" class="form-control" placeholder="Pasirinkite vietą..." />
         </div>
-
-        <div>
+        <div class="filter-search-btns">
             <a href="filtering_page.html"><button class="btn btn-primary btn-filter" >Filtruoti</button></a>
             <button class="btn btn-outline-primary btn-search">Ieškoti</button>
         </div>

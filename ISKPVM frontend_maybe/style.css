@@ -2,6 +2,28 @@
 /*  1. Common Styles (Global)         */
 /*------------------------------------*/
 
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+.roboto-light {
+    font-family: "Roboto", sans-serif;
+    font-weight: 300;
+}
+
+.roboto-regular {
+    font-family: "Roboto", sans-serif;
+    font-weight: 400;
+}
+
+.roboto-medium {
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
+}
+
+.roboto-bold {
+    font-family: "Roboto", sans-serif;
+    font-weight: 700;
+}
+
 :root {
     --background-color: #f8f9fa;
     --container-bg-color: #ffffff;
@@ -16,7 +38,10 @@
     --info-box-paiesku: #dee2e6;
     --content-placeholder-card-color: rgb(187, 187, 189);
     --content-placeholder-card-text-color: #6c757d;
-    --filtruoti-btn-color: #411c69;
+    --erasmusPurple: #61479a;
+    --erasmusBlue: #36758c;
+    --erasmusYellow: #FFC857;
+    --dividerGray1: #0000001F;
 }
 
 body {
@@ -25,11 +50,18 @@ body {
     padding: 0;
 }
 
+.btn {
+    border-radius: 3rem;
+    padding: 10px 20px;
+    font-weight: 600;
+}
+
 .header {
     display: flex;
+    width: 100%;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
+    padding: 1.25rem 2rem 1.25rem 2rem;
     background-color: var(--header-background-color);
     color: var(--header-text-color);
     border-bottom: 1px solid #ddd;
@@ -49,29 +81,6 @@ body {
     text-decoration: none; /* Remove underline for all states */
 }
 
-.buttons {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-
-.form-group label {
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-    display: block;
-}
-
-.form-group {
-    display: block;
-    padding: 0.3rem;
-    margin: 0.3rem;
-    background-color: var(--form-group-bg-color);
-    border-radius: 0.3rem;
-    padding-left: 1rem;
-    padding-right: 1rem;
-}
-
 .slider-container {
     display: flex;
     align-items: center;
@@ -82,59 +91,126 @@ body {
 /*  2. Filtering Page Styles          */
 /*------------------------------------*/
 
+
+.filter-icon {
+    margin: 0.25rem 0.25rem 0.25rem 0.5rem;
+    width: 24px;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    margin: 0.25rem 0;
+}
+
+#filter-header {
+    background: #ffffff;
+    margin: 1rem 2rem;
+    margin-bottom: 0.85rem;
+
+}
+
+#filter-body-main {
+    border-top: 2px solid var(--dividerGray1);
+    background: #FDFDFD;
+    flex: 1;
+}
+
+#filter-body-secondary {
+    border-top: 2px solid var(--dividerGray1);
+    background: #F9FAFB;
+    flex: 1;
+}
+
+#filter-footer {
+    border-top: 2px solid var(--dividerGray1);
+    display: flex;
+    justify-content: space-between;
+    
+    & .buttons {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        align-self: flex-end;
+    }
+
+    & button {
+        border-radius: 0.75rem;
+    }
+
+    & .btn-primary {
+        background-color: var(--erasmusPurple);
+    }
+
+    & .btn-danger {
+        background-color: white;
+        color: black;
+        border: 0;
+        box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.25);
+    }
+}
+
+.results-count {
+    margin-left: 1rem;
+}
+
+hr {
+    width: 100%;
+    margin-left: 1em;
+    margin-right: 1em;
+    border-style: solid;
+}
+
+.content-breaker {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.lines {
+    width: auto;
+    height: 1px;
+    border-bottom: 1px solid var(--dividerGray1);
+}
+
+.word {
+    text-align: center;
+}
+
+#filtering-page .form-group {
+    background: #F6F6F6;
+    border: 2px solid #00000012;
+    border-radius: 0.75rem;
+    margin: 0.3rem 0.3rem;
+    padding: 0.2rem 0.4rem;
+
+    & label {
+        margin: 0.25rem 2rem 0.25rem 0.25rem;
+        width: auto;
+        text-wrap: nowrap;
+    }
+}
+
 #filtering-page .container {
-    margin: 2rem auto;
+    margin-top: 2rem;
+    margin-bottom: 0;
     max-width: 1200px;
-    background: var(--container-bg-color);
-    border-radius: 0.5rem;
+    background: #ffffff;
+    border-radius: 1rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
+    padding: 0;
 }
 
 #filtering-page .form-panel {
-    flex: 1;
-    padding: 1rem;
-    background-color: var(--form-panel-bg-color);
-    border-radius: 1rem;
-    margin: 0.5rem;
-}
-
-
-/* test TODO */
-#filtering-page .form-panel-test {
-    flex: 1;
-    padding: 1rem;
-    background-color: rgb(238, 238, 238);
-    border-radius: 1rem;
-    margin: 0.5rem;
+    padding: 0.5rem;
 }
 
 #filtering-page .form-container {
     display: flex;
-    gap: 1rem;
 }
 
 #filtering-page #livingCosts {
     width: 80%;
-}
-
-#filtering-page .content-breaker {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-}
-
-#filtering-page .lines {
-    width: 40%;
-    border-top: 1px black solid;
-    margin-top: 12px;
-}
-
-#filtering-page .line {
-    width: 100%;
-    border-top: 1px black solid;
-    margin-top: 0.3rem;
-    padding-bottom: 0.2rem;
 }
 
 @media (max-width: 768px) {
@@ -151,34 +227,80 @@ body {
 /*  3. Main Page Styles               */
 /*------------------------------------*/
 
+body, html {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+}
 
+.duk {
+    border-color: transparent;
+    color: var(--erasmusPurple);
+    &:hover {
+        color: var(--erasmusPurple);
+        background-color: transparent;
+        border-color: var(--erasmusPurple);
+    }
+    
+    &:active{
+        color: white;
+        background-color: var(--erasmusPurple) !important;
+        border-color: var(--erasmusPurple) !important;
+    }
+}
+
+#profilis {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    border-color: var(--erasmusPurple);
+    border-width: 1px;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+
+    &:active {
+        background-color: var(--erasmusPurple);
+        transition: ease 0.3s;
+    }
+}
+
+#prisijungti {
+    background-color: var(--erasmusYellow);
+    color: black;
+    border: var(--erasmusYellow);
+
+    &:hover {
+        background-color: #e5b554;
+    }
+}
 
 #main-page .main-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin: 0;
-}
-
-#main-page .main-container {
-    /* max-width: 800px; */
+    height: 100%; 
     text-align: center;
     margin-top: 3rem;
 }
 
 #main-page .title {
-    font-size: 2rem;
-    font-weight: bold;
+    font-size: 2.5rem;
+    letter-spacing: -4%;
     margin-bottom: 1rem;
-}
-
-#main-page .title span {
-    color: #5bc0de;
+    background: url('/ISKPVM\ frontend_maybe/text-mask.png') 0 0 / cover no-repeat;
+    background-clip: text;
+    background-size: 150%;
+    color: transparent;
 }
 
 #main-page .btn-filter {
-    background-color: var(--filtruoti-btn-color);
+    background-color: var(--erasmusPurple);
 }
 
 #main-page .info-box {
@@ -208,6 +330,21 @@ body {
     box-shadow: 5px 5px;
 }
 
+.mb-3 {
+    width: 430px; 
+}
+
+.form-control {
+    height: 50px;
+    border-radius: 3rem;
+    padding-left: 20px;
+}
+
+.filter-search-btns {
+    display: flex;
+    justify-content: space-around;
+    width: 210px;
+}
 /*------------------------------------*/
 /*  4. Profile Management Page Styles */
 /*------------------------------------*/

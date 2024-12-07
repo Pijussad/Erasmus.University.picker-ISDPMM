@@ -7,181 +7,201 @@
     <title>Study Selection</title>
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/flatly/bootstrap.min.css" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    
+    <link rel="icon" href="/ISKPVM frontend_maybe/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
     <script type="module" src="filtering_page.js"></script>
-
-    
 </head>
-
 
 <body id="filtering-page">
 
-    <!-- Header Section -->
     <div class="header">
-        <!-- Brand Name -->
         <a class="brands" href="index.html">ERASMUS GIDAS</a>
-
-        <!-- Buttons -->
         <div class="buttons">
             <button class="btn btn-outline-info btn-sm duk">D.U.K</button>
-            <a href="dumy_login_to_vu.html"><button class="btn btn-success btn-sm">Prisijungti</button></a>
-            
+            <a href="profilio_valdymas.html">
+                <button id="profilis" class="btn btn-info btn-sm">
+                    <img width="16" height="16" src="https://img.icons8.com/forma-light/64/user.png" alt="user"/>
+                </button>
+            </a>
+            <button id="prisijungti" class="btn btn-success btn-sm">Prisijungti</button>
         </div>
     </div>
 
-
-
-    <div class="container">
-        <h5>Lorem ipsum dolor sit amet consectetur. Sed lorem integer sit aliquam lacus. Imperdiet at morbi in et porttitor nisl.</h5>
+    <div class="container roboto-medium">
+        <div id="filter-header">
+            <h5 class="roboto-regular">Pasirinkite „Erasmus“ studijų vietą ir/ar universitetą:</h5>
+        </div>
         <form id="filters-form">
-            <div class="form-container">
-                <div class="form-panel">
+            <div class="form-container" id="filter-body">
+                <div class="form-panel" id="filter-body-main">
 
                     <!-- Fakultetas -->
                     <div class="form-group">
-                        <label for="faculty">Fakultetas</label>
-                        <select class="form-select" id="faculty">
-                            <option selected> - </option>
-                            <option >Matematikos ir informatikos fakultetas</option>
-                        </select>
+                        <div class="form-label">
+                            <img class="filter-icon" src="https://img.icons8.com/?size=100&id=wSZ2E8Vjya01&format=png&color=61479a" alt="university"/>
+                            <label for="faculty">Fakultetas</label>
+                            <select class="form-select" id="faculty">
+                                <option selected>Pasirinkti fakultetą...</option>
+                            </select>
+                        </div>
                     </div>
-
-                    <!-- Studijų programa -->
-                    <div class="form-group">
-                        <label for="program">Studijų programa</label>
-                        <select class="form-select" id="program">
-                            <option selected> - </option>
-                            <option >Duomenų mokslas</option>
-                        </select>
-                    </div>
-
+                    <hr style="margin: 0;border: 0;">  <!-- collapsed margins are apparently a thing and this solves that-->
                     <!-- Studijų tipas -->
                     <div class="form-group">
-                        <label for="studyType">Studijų tipas</label>
-                        <select class="form-select" id="studyType">
-                            <option selected> - </option>
-                            <option >Bakalauro</option>
-                        </select>
+                        <div class="form-label">
+                            <img class="filter-icon" src="https://img.icons8.com/?size=100&id=0junaMlOZb6G&format=png&color=61479a" alt="university"/>
+                            <label for="studyType">Studijų tipas</label>
+                            <select class="form-select" id="studyType" disabled>
+                            </select>
+                        </div>
                     </div>
-
+                    <hr style="margin: 0;border: 0;">
+                    <!-- Studijų programa -->
+                    <div class="form-group">
+                        <div class="form-label">
+                            <img class="filter-icon" src="https://img.icons8.com/?size=100&id=wSZ2E8Vjya01&format=png&color=61479a" alt="university"/>
+                            <label for="program">Studijų programa</label>
+                            <select class="form-select" id="program" disabled>
+                            </select>
+                        </div>
+                    </div>
+                    <hr style="margin: 0;border: 0;">
                     <!-- Semestras -->
                     <div class="form-group">
-                        <label for="semester">Semestras</label>
-                        <select class="form-select" id="semester">
-                            <option selected> - </option>
-                            <option >III - vasaros</option>
-                        </select>
+                        <div class="form-label">
+                            <img class="filter-icon" src="https://img.icons8.com/?size=100&id=MnXJ8TCaeQLB&format=png&color=61479a" alt="university"/>
+                            <label for="semester">Semestras</label>
+                            <select class="form-select" id="semester" disabled>
+                            </select>
+                        </div>
                     </div>
-                
+                    <hr style="margin: 0;border: 0;">
                     <!-- Privalomi dalykai -->
                     <div class="form-group">
                         <label><strong>Privalomi dalykai:</strong></label>
-                        <ul>
-                            <li>Duomenų mokslo projektas</li>
-                            <li>Regresinė analizė</li>
-                            <li>Tikimybiniai mašininio mokymosi algoritmai I/II d.</li>
+                        <ul class="roboto-regular">
+                            <!-- List items will be populated dynamically -->
                         </ul>
-                        <p>Kreditų skaičius: 60</p>
+                        <p style="margin: 0 0 0.25rem 0.25rem;">Kreditų skaičius: 60</p>
                     </div>
-
+                
                 </div>
+                
 
-                <div class="form-panel">
+                <div class="form-panel" id="filter-body-secondary">
 
+                    <!-- Šalis -->
                     <div class="form-group">
-                        <!-- Šalis -->
-                        <div class="form-group-inner1">
+                        <div class="form-label">
+                            <img class="filter-icon" src="https://img.icons8.com/?size=100&id=P0gmIJVn1Rro&format=png&color=61479a" alt="university"/>
                             <label for="country">Šalis</label>
                             <select class="form-select" id="country">
                                 <option selected> - </option>
-                                <option >Latvija</option>
                             </select>
                         </div>
-
-                        <!-- Miestas -->
-                        <div class="form-group-inner1">
+                    </div>
+                    <hr style="margin: 0;border: 0;">
+                    <!-- Miestas -->
+                    <div class="form-group">
+                        <div class="form-label">
+                            <img class="filter-icon" src="https://img.icons8.com/?size=100&id=naNpgO6CVkWW&format=png&color=61479a" alt="university"/>
                             <label for="city">Miestas</label>
                             <select class="form-select" id="city">
                                 <option selected> - </option>
-                                <option >Bakalauro</option>
+                                <option >-unimplemented-</option>
                             </select>
                         </div>
                     </div>
-
+                
                     <div class="content-breaker">
-                        <div class="lines"></div>
+                        <hr>
                         <div class="word">arba</div>
-                        <div class="lines"></div>
+                        <hr>
                     </div>
-
-                    
-
+                
                     <!-- Regionas -->
                     <div class="form-group">
-                        <label for="region">Regionas</label>
-                        <select class="form-select" id="region">
-                            <option selected> - </option>
-                            <option >Europa - Baltijos šalys</option>
-                        </select>
+                        <div class="form-label">
+                            <img class="filter-icon" src="https://img.icons8.com/?size=100&id=k3HwOfdGB5IM&format=png&color=61479a" alt="university"/>
+                            <label for="region">Regionas</label>
+                            <select class="form-select" id="region">
+                                <option selected> - </option>
+                                <option >-unimplemented-</option>
+                            </select>
+                        </div>
                     </div>
-
+                
                     <div class="content-breaker">
                         <div class="line"></div>
                         <div class="line"></div>
                     </div>
-
+                
                     <!-- Universitetas -->
                     <div class="form-group">
-                        <label for="university">Universitetas</label>
-                        <select class="form-select" id="university">
-                            <option selected> - </option>
-                            <!-- <option >Liepajas Universitetas</option> -->
-                        </select>
-                    </div>
-
-                    <!-- Studijų kalba -->
-                    <div class="form-group">
-                        <label for="language">Studijų kalba</label>
-                        <select class="form-select" id="language">
-                            
-                            <option selected>English</option>
-                        </select>
-                    </div>
-
-                    <!-- QS įvertinimas -->
-                    <div class="form-group">
-                        <label for="qsRating">QS įvertinimas</label>
-                        <select class="form-select" id="qsRating">
-                            <option selected>&gt;10 000</option>
-                        </select>
-                    </div>
-
-                    <!-- Pragyvenimo išlaidos -->
-                    <div class="form-group">
-                        <label for="livingCosts">Pragyvenimo išlaidos (mėn.)</label>
-                        <div class="slider-container">
-                            <input type="range" class="form-range" id="livingCosts" min="0" max="250">
-                            <div id="livingCostsN">0€ — 250€</div>
+                        <div class="form-label">
+                            <img class="filter-icon" src="https://img.icons8.com/?size=100&id=wSZ2E8Vjya01&format=png&color=61479a" alt="university"/>
+                            <label for="university">Universitetas</label>
+                            <select class="form-select" id="university">
+                                <option selected> - </option>
+                            </select>
                         </div>
                     </div>
-
+                
+                    <div style="display: flex;">
+                        <!-- Studijų kalba -->
+                        <div class="form-group" style="flex: 1; padding-bottom: 0.5rem;">
+                            <div class="form-label">
+                                <img class="filter-icon" src="https://img.icons8.com/?size=100&id=trLP73OEMPvT&format=png&color=61479a" alt="university"/>
+                                <label for="language">Studijų kalba</label>
+                            </div>
+                            <select class="form-select" id="language">
+                                <option selected>English</option>
+                            </select>
+                        </div>
+                        <!-- QS įvertinimas -->
+                        <div class="form-group" style="flex: 1; padding-bottom: 0.5rem;">
+                            <div class="form-label">
+                                <img class="filter-icon" src="https://img.icons8.com/?size=100&id=KuQXYVYhKuCb&format=png&color=61479a" alt="university"/>
+                                <label for="qsRating">QS įvertinimas</label>
+                            </div>
+                            <select class="form-select" id="qsRating">
+                                <option selected>&gt;-unimplemented-</option>
+                            </select>
+                        </div>
+                    </div>
+                
+                    <!-- Pragyvenimo išlaidos -->
+                    <div class="form-group">
+                        <div class="form-label">
+                            <img class="filter-icon" src="https://img.icons8.com/?size=100&id=ldvZl2FZHpxr&format=png&color=61479a" alt="university"/>
+                            <label for="livingCosts">Pragyvenimo išlaidos (mėn.)</label>
+                        </div>
+                        <div class="slider-container">
+                            <input type="range" class="form-range" id="livingCosts" min="0" max="250">
+                            <div id="livingCostsN">123</div>
+                        </div>
+                    </div>
+                
                 </div>
+                
             </div>
 
-            <div class="form-panel">
-                <!-- Buttons -->
-                <div class="results-count">Rezultatų: [content]</div>
-
-                <div class="buttons">
-                    <button type="reset" class="btn btn-danger">Atšaukti</button>
-                    <button type="submit" class="btn btn-primary">Filtruoti</button>
-                </div>
-            </div>
+            
             
         </form>
+        <div class="form-panel" id="filter-footer">
+            <!-- Buttons -->
+            <div class="results-count">Rezultatų: [content]</div>
 
-        <div id="resOutput" class="form-panel"></div>
+            <div class="buttons">
+                <button type="reset" class="btn btn-danger">Atšaukti</button>
+                <button type="submit" class="btn btn-primary">Filtruoti</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div id="resOutput" class="form-panel">asd</div>
     </div>
 
 
