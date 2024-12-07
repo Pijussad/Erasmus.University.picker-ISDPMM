@@ -6,18 +6,129 @@
   <title>Search Results</title>
   <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/flatly/bootstrap.min.css" rel="stylesheet">
 
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+
+    .uni-card-flat {
+      display: flex;
+      align-items: center;
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .uni-card-flat.expanded {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 20px;
+    }
+
+    .uni-card-flat img {
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    
+
+    .uni-name {
+        font-weight: bold;
+    }
+
+    .card-expanded-content {
+      display: none;
+      margin-top: 15px;
+      height: 100%;
+    }
+
+    .card-content {
+        height: 100%;
+        padding: 5px;
+    }
+
+    .uni-card-flat.expanded .card-expanded-content {
+      display: flex;
+    }
+
+    .main-card-content{
+        display: flex;
+        flex-direction: row;
+    }
+  </style>
 </head>
 <body>
     <div class="container my-4">
         <div class="form-container">
+            <!-- University Card -->
+            <div class="uni-card-flat d-flex align-items-stretch align-content-around" onclick="toggleExpand(this)">
+                <div class="main-card-content">
+                    <div class="align-self-start">
+                        <img src="https://via.placeholder.com/120" alt="University Image">
+                    </div>
 
-            
-            <div class="form-panel">
-            
-                hello
+                    <div class="card-content">
+                        <div class="uni-name">Liepajas Universitate</div>
+                        <div class="uni-country">Latvija</div>
+                        <div class="uni-direction">Information Technology</div>
+                        <div class="uni-degree">Bachelor</div>
+                    </div>
+                </div>
+
+                <div class="card-expanded-content">
+                    <p><strong>Details:</strong></p>
+                    <ul>
+                        <li>Faculty: Computer Science and IT</li>
+                        <li>QS Rank: 439</li>
+                        <li>Languages: English (B1)</li>
+                        <li>Dormitory: Available</li>
+                    </ul>
+                </div>
             </div>
 
+            <!-- Another University Card -->
+            <div class="uni-card-flat d-flex align-items-stretch align-content-around" onclick="toggleExpand(this)">
+                <div class="align-self-start">
+                    <img src="https://via.placeholder.com/120" alt="University Image">
+                </div>
 
+                <div class="card-content">
+                    <div class="uni-name">Liepajas Universitate</div>
+                    <div class="uni-country">Latvija</div>
+                    <div class="uni-direction">Information Technology</div>
+                    <div class="uni-degree">Bachelor</div>
+                </div>
+
+
+                <div class="card-expanded-content">
+                    <p><strong>Expanded Details:</strong></p>
+                    <ul>
+                        <li>Faculty: Science and Engineering</li>
+                        <li>QS Rank: 500</li>
+                        <li>Languages: English</li>
+                        <li>Dormitory: Not Available</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+      // Function to toggle expand/collapse and update card content
+      function toggleExpand(card) {
+        card.classList.toggle('expanded');
+
+        
+      }
+    </script>
 </body>
 </html>

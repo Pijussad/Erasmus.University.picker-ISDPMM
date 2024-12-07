@@ -147,15 +147,8 @@ $(document).ready(function () {
 
 
 
-// Isikelti visus duom?
-// is duomenu susirasti unique rodilkius
-// juos sukelti i html.
-
 
 function find_unique_and_populate_html(res) {
-    // find unique universities
-
-    //console.log("test all info", res);
 
 
     //Language
