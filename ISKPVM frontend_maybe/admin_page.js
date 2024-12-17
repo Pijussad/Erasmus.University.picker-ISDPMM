@@ -1,6 +1,6 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, query, where, doc, getDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCDrG2mniJa9zEJMm6n4MGf6NLdWH4cbzM",
@@ -12,57 +12,52 @@ const firebaseConfig = {
   measurementId: "G-NW8RK7LQR9"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
+const messageList = $("#messageList");
+const messagesRef = collection(db, "Reports");
+
+async function loadMessages() {
+    try {
+      const reports = [];
+      const q = query(messagesRef, orderBy('messageTime', 'desc')); 
+
+      for await (const doc of (await getDocs(q)).docs) {
+        reports.push(doc.data());
+      }
 
 
+      messageList.empty();
 
-// Obtaining information from filter page options
-$(document).ready(async function () {
+      if (reports.length === 0) {
+        messageList.append("<li>No reports found.</li>");
+      } else {
+        reports.forEach((data) => {
+          const messageTime = data.messageTime.toDate();
+          const formattedDate = messageTime.toLocaleString();
 
+          const messageItem = `
+            <li>
+              <strong>Kodas:</strong> ${data.kodas || 'N/A'}<br>
+              <strong>Message:</strong> ${data.message || 'N/A'}<br>
+              <strong>User ID:</strong> ${data.userId || 'N/A'}
+            </li>
+          `;
+          messageList.append(messageItem);
+        });
+      }
 
-    function logout(){
-        // Implement your logout logic here (e.g., clear session, redirect)
-        //alert("Atsijungėte!"); // Placeholder
-        window.location.href = "index.html"; // Redirect to the main page
+    } catch (error) {
+      console.error("Error loading messages:", error);
+      messageList.empty().append("<li>Error loading messages.</li>");
     }
-
-    async function loadMessages() {
-        try {
-            const messagesRef = collection(db, "messages"); // Replace "messages" with your collection name
-            const querySnapshot = await getDocs(messagesRef);
-
-            const messageList = document.getElementById("messageList");
-            messageList.innerHTML = ""; // Clear previous messages
-
-            querySnapshot.forEach((doc) => {
-                const messageData = doc.data();
-                const messageItem = document.createElement("li");
-                const messageLink = document.createElement("a");
-                
-                messageLink.href = messageData.url || "#"; // Use the URL if available, otherwise "#"
-                messageLink.textContent = `${messageData.title || "Untitled"}: ${messageData.message || ""}`; // Display title and message
-                
+  }
 
 
-                messageItem.appendChild(messageLink);
-                messageList.appendChild(messageItem);
-            });
-
-
-        } catch (error) {
-            console.error("Error loading messages:", error);
-            // Handle error (e.g., display an error message)
-             const messageList = document.getElementById("messageList");
-             messageList.innerHTML = "<li>Error loading messages.</li>";
-
-        }
-    }
-
+$(document).ready(async function() {
     loadMessages();
 
 
-
+    // ... (rest of your document.ready code) ...
 });
