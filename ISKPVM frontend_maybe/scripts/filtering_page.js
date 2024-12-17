@@ -41,7 +41,7 @@ async function queryUniversities(filters) {
             }
         }
         if (queriesArr.length > 0) {
-            q = query(q, ...queriesArr, orderBy("salis", "desc"));
+            q = query(q, ...queriesArr);
         }
         const querySnapshot = await getDocs(q);
         const results = [];
