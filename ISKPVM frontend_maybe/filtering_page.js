@@ -141,10 +141,6 @@ $(document).ready(async function () {
         // Connection to DB to get information
     });
 
-
-
-
-
 });
 
 
