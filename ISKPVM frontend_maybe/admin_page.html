@@ -9,7 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/flatly/bootstrap.min.css" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link rel="stylesheet" href="style.css">  <!-- Assuming you have a shared style.css -->
-    <script type="module" src="admin.js"></script> <!---  Separate JS file for admin -->
+    <script type="module" src="admin_page.js"></script> <!---  Separate JS file for admin -->
 
     <style>
         .smth {
@@ -17,22 +17,21 @@
             flex-direction: column;
             align-items: center;
             justify-content: start;
-            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            flex-wrap: wrap; 
         }
 
         .profile-container {
-            width: 45%; /* Adjust as needed */
-            margin: 1rem; /* Add some spacing */
-            min-width: 300px; /* Minimum width to prevent overly narrow containers */
+            width: 45%;
+            margin: 1rem; 
+            min-width: 300px; 
         }
 
-        @media (max-width: 768px) { /* Adjust breakpoint as needed */
+        @media (max-width: 768px) { 
             .profile-container {
-                width: 90%; /* Make containers full width on smaller screens */
+                width: 90%; 
             }
         }
 
-        /* Style for admin-specific fields */
         .admin-field {
             margin-bottom: 1rem;
         }
@@ -63,7 +62,6 @@
                 <div id="userList">
                    <!-- User list will be displayed here -->
                 </div>
-
             </div>
         </div>
 
@@ -86,39 +84,8 @@
             </div>
         </div>
 
-
-
-
     </div>
 
-    <script>
-        function logout(){
-            // Implement your logout logic here (e.g., clear session, redirect)
-            alert("Atsijungėte!"); // Placeholder
-            window.location.href = "index.html"; // Redirect to the main page
-        }
-
-        function searchUsers() {
-            // Implement user search logic here (e.g., AJAX call to backend)
-            const searchTerm = document.getElementById("userSearch").value;
-            alert("Ieškote: " + searchTerm); // Placeholder
-        }
-
-        function addContent() {
-             // Implement add content logic here
-            const newContent = document.getElementById("newContent").value;
-            alert("Pridėtas turinys: " + newContent); // Placeholder
-        }
-
-       // Example:  Get and display user count (replace with your actual logic) 
-       fetch('/getUserCount') // Replace with your API endpoint
-       .then(response => response.json())
-       .then(data => {
-           document.getElementById("userCount").textContent = data.count;
-       });
-
-
-    </script>
 
 </body>
 
