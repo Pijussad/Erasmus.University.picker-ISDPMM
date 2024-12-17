@@ -5,23 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Erasmus Gidas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/flatly/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" href="/ISKPVM frontend_maybe/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/ISKPVM frontend_maybe/assets/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../style.css">
 </head>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const prisijungtiButton = document.getElementById('prisijungti');
+        const loginPopup = document.getElementById('loginPopup');
+        const loginButton = document.getElementById('loginButton');
+        const closeButton = document.getElementById('closeButton');
+
         prisijungtiButton.addEventListener('click', function() {
             const profilisButton = document.getElementById('profilis');
             if (profilisButton.style.display == 'flex') {
                 profilisButton.style.display = 'none'; 
+                
             } else {
                 profilisButton.style.display = 'flex'; 
+                loginPopup.style.display = 'flex';
             }
         });
-    });
 
+        closeButton.addEventListener('click', function() {
+        loginPopup.style.display = 'none';
+        });
+    });
 </script>
 
 <body id="main-page">
@@ -38,6 +47,30 @@
             <button id="prisijungti" class="btn btn-success btn-sm">Prisijungti</button>
         </div>
     </div>
+
+    <!-- Login Pop-Up -->
+    <div id="loginPopup">
+        <form class="form">
+            <button id="closeButton" type="button" class="" aria-label="Close">X</button>
+            <p class="form-title">Sign in to your account</p>
+             <div class="input-container">
+               <input type="email" placeholder="Enter email">
+               <span>
+               </span>
+           </div>
+           <div class="input-container">
+               <input type="password" placeholder="Enter password">
+             </div>
+              <button type="submit" class="submit">
+             Sign in
+           </button>
+     
+           <p class="signup-link">
+             No account?
+             <a href="">Sign up</a>
+           </p>
+        </form>
+      </div>
 
     <!-- Main Content -->
     <div class="main-container">
