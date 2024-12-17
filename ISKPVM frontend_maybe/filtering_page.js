@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCDrG2mniJa9zEJMm6n4MGf6NLdWH4cbzM",
@@ -13,6 +13,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
+
+const reports = collection(db, "Reports")
 
 async function queryUniversities(filters) {
     try {
@@ -80,6 +82,9 @@ function format_and_output(res){
                             <h5>URL</h5>
                             <a href="${univ.url || '#'}" target="_blank">${univ.url || 'N/A'}</a>
                         </div>
+                        <div>
+                            <button id="pranestiKlaida" class="btn btn-danger btn-sm">Pranešti klaidą</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -88,6 +93,36 @@ function format_and_output(res){
             $(this).toggleClass('expanded');
         });
         out.append(card);
+    });
+
+    out.on('click', '#pranestiKlaida', async function(event){
+        const card = $(this).closest('.university-card');
+
+        const universitetas = card.find('h4').text();
+
+        console.log("Pranešti klaidą clicked for:", universitetas);
+
+        const userInput = prompt("Aprašykite klaidą", "nothing");
+
+        if (userInput === null) {
+            console.log("User cancelled the input.");
+        } else {
+            try {
+                console.log("User entered:", userInput);
+                const reportData = {
+                    kodas: universitetas,
+                    message: userInput,
+                    messageTime: serverTimestamp(),
+                    userId: "idk"
+                }
+    
+                const docRef = await addDoc(collection(db, "Reports"), reportData);
+                console.log("Report written with ID: ", docRef.id);
+            }
+            catch (e) {
+                console.error("Error adding report: ", e);
+            }
+        }
     });
 }
 
@@ -136,6 +171,9 @@ $(document).ready(async function () {
         const res = await queryUniversities(filters);
         format_and_output(res);
     });
+
+
+
 });
 
 async function fetchFaculties() {
