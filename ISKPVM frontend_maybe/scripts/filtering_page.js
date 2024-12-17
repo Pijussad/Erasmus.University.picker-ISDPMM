@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, getDoc, getDocs, addDoc, serverTimestamp, query, where, doc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCDrG2mniJa9zEJMm6n4MGf6NLdWH4cbzM",
@@ -13,7 +13,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
-
 const reports = collection(db, "Reports");
 
 let all_universities = [];
@@ -32,6 +31,10 @@ async function queryUniversities(filters) {
                     queriesArr.push(where("kalbos", "array-contains", value));
                 } else if (field === "fakultetas"){
                     queriesArr.push(where(field, "==", value));
+                } else if (field === "salis" || field === "miestas" || field === "regionas" || field === "universitetas") {
+                    if (value !== "-") {
+                        queriesArr.push(where(field, "==", value));
+                    }
                 } else {
                     queriesArr.push(where(field, "==", value));
                 }
@@ -42,8 +45,8 @@ async function queryUniversities(filters) {
         }
         const querySnapshot = await getDocs(q);
         const results = [];
-        querySnapshot.forEach((doc) => {
-            results.push({ id: doc.id, ...doc.data() });
+        querySnapshot.forEach((docu) => {
+            results.push({ id: docu.id, ...docu.data() });
         });
         return results;
     } catch (error) {
@@ -57,17 +60,16 @@ async function loadCommentsForUniversity(universityCode) {
     const q = query(commentsRef, where("allowed", "==", true), where("code", "==", universityCode));
     const querySnapshot = await getDocs(q);
     const comments = [];
-    querySnapshot.forEach((doc) => {
-        const data = doc.data();
+    querySnapshot.forEach((docu) => {
+        const data = docu.data();
         comments.push({
-            id: doc.id,
+            id: docu.id,
             text: data.commentText,
             userID: data.userID || "Nežinomas",
             messageTime: data.messageTime,
             pinned: data.pinned || false
         });
     });
-
     const pinnedComments = comments.filter(c => c.pinned);
     const normalComments = comments.filter(c => !c.pinned);
     return [...pinnedComments, ...normalComments];
@@ -114,17 +116,108 @@ async function addComment(universityCode, commentText) {
     });
 }
 
-function format_and_output(res){
+async function fetchAllCountryData(countries) {
+    const countryDataMap = {};
+    const promises = countries.map(async (countryName) => {
+        const cDocRef = doc(db, "Countries", countryName);
+        const cDoc = await getDoc(cDocRef);
+        if (!cDoc.exists()) {
+            countryDataMap[countryName] = {costOfLiving: '-', rentCost:'-', scholarship:'-'};
+        } else {
+            const data = cDoc.data();
+            countryDataMap[countryName] = {
+                costOfLiving: data.costOfLiving || '-',
+                rentCost: data.rentCost || '-',
+                scholarship: data.scholarship || '-'
+            };
+        }
+    });
+    await Promise.all(promises);
+    return countryDataMap;
+}
+
+$(document).ready(async function () {
+    const emptyfilters = {
+        fakultetas: "-",
+        programa: "-",
+        studijuTipas: "-",
+        semestras: "-",
+        salis: "-",
+        miestas: "-",
+        regionas: "-",
+        universitetas: "-",
+        kalba: "-"
+    };
+    const res = await queryUniversities(emptyfilters);
+    all_universities = res;
+    if (res.length != 0){
+        await format_and_output(res);
+        find_unique_and_populate_html(res);
+    } else {
+        console.log("Failed getting query results !!!");
+    }
+
+    $('button.btn-primary').on('click',async function() {
+        const _fakultetas = $('#faculty').val() || "-";
+        const _programa = $('#program').val() || "-";
+        const _studijuTipas = $('#studyType').val() || "-";
+        const _semestras = $('#semester').val() || "-";
+        const _salis = $('#country').val() || "-";
+        const _miestas = $('#city').val() || "-";
+        const _regionas = $('#region').val() || "-";
+        const _universitetas = $('#university').val() || "-";
+        const _kalba = $('#language').val() || "-";
+
+        const filters = {
+            fakultetas: _fakultetas,
+            programa: _programa,
+            studijuTipas: _studijuTipas,
+            semestras: _semestras,
+            salis: _salis,
+            miestas: _miestas,
+            regionas: _regionas,
+            universitetas: _universitetas,
+            kalba: _kalba
+        };
+        const res = await queryUniversities(filters);
+        await format_and_output(res);
+    });
+});
+
+async function format_and_output(res){
     const out = $("#resOutput");
     out.empty();
-    $(".results-count").text(`Rezultatų: ${res.length}`);
-    res.forEach((univ) => {
+
+    const livingCostsMax = parseInt($("#livingCosts").val() || "0", 10);
+
+    const filteredResults = [];
+    const uniqueCountries = new Set();
+
+    for (let univ of res) {
+        if (univ.salis) uniqueCountries.add(univ.salis);
+    }
+
+    const countryDataMap = await fetchAllCountryData(Array.from(uniqueCountries));
+
+    for (let univ of res) {
+        const countryData = countryDataMap[univ.salis] || {costOfLiving:'-',rentCost:'-',scholarship:'-'};
+        const costOfLivingVal = parseInt(countryData.costOfLiving === '-' ? "9999999" : countryData.costOfLiving,10);
+        if (costOfLivingVal <= livingCostsMax) {
+            filteredResults.push({...univ, countryData});
+        }
+    }
+
+    $(".results-count").text(`Rezultatų: ${filteredResults.length}`);
+
+    for (let u of filteredResults) {
+        const univ = u;
         const image = univ.imageUrl || 'https://via.placeholder.com/60';
         const countryCity = (univ.salis || '') + (univ.miestas ? ', ' + univ.miestas : '');
         const langs = (univ.kalbos || []).join(', ') || '-';
-        const pragyvenimoIslaidos = univ.pragyvenimoIslaidos || '-';
-        const stipendija = univ.stipendija || '-';
-        const qsRank = univ.qsRank || 45; // fallback if not provided
+        const qs = univ.qs || '-';
+        const costOfLiving = univ.countryData.costOfLiving;
+        const rentCost = univ.countryData.rentCost;
+        const scholarship = univ.countryData.scholarship;
 
         const card = $(`
             <div class="university-card">
@@ -144,19 +237,21 @@ function format_and_output(res){
                             <p>${univ.sritis || '-'}</p>
                             <h5>Kalbos</h5>
                             <p>${langs}</p>
-                        </div>
-                        <div class="university-details-column">
                             <h5>Studijų lygis</h5>
                             <p>${univ.studijuTipas || '-'}</p>
                             <h5>URL</h5>
                             <a href="${univ.url || '#'}" target="_blank">${univ.url || 'N/A'}</a>
+                        </div>
+                        <div class="university-details-column">
                             <h5>Pragyvenimo išlaidos</h5>
-                            <p>${pragyvenimoIslaidos}</p>
+                            <p>${costOfLiving}</p>
+                            <h5>Nuomos kaina</h5>
+                            <p>${rentCost}</p>
                             <h5>Stipendija</h5>
-                            <p>${stipendija}</p>
-                            <h5 style="margin-top:1.5rem;">QS įvertinimas</h5>
+                            <p>${scholarship}</p>
+                            <h5 style="margin-top:1.5rem;">QS Rank</h5>
                             <div class="qs-rank-badge">
-                                <div class="rank-num">${qsRank}</div>
+                                <div class="rank-num">${qs}</div>
                                 <span>Rank</span>
                             </div>
                         </div>
@@ -217,63 +312,15 @@ function format_and_output(res){
         });
 
         out.append(card);
-    });
-}
-
-$(document).ready(async function () {
-    const emptyfilters = {
-        fakultetas: "-",
-        programa: "-",
-        studijuTipas: "-",
-        semestras: "-",
-        salis: "-",
-        miestas: "-",
-        regionas: "-",
-        universitetas: "-",
-        kalba: "-"
-    };
-    const res = await queryUniversities(emptyfilters);
-    all_universities = res;
-    if (res.length != 0){
-        format_and_output(res);
-        find_unique_and_populate_html(res);
-    } else {
-        console.log("Failed getting query results !!!");
     }
-
-    $('button.btn-primary').on('click',async function() {
-        const _fakultetas = $('#faculty').val() || "-";
-        const _programa = $('#program').val() || "-";
-        const _studijuTipas = $('#studyType').val() || "-";
-        const _semestras = $('#semester').val() || "-";
-        const _salis = $('#country').val() || "-";
-        const _miestas = $('#city').val() || "-";
-        const _regionas = $('#region').val() || "-";
-        const _universitetas = $('#university').val() || "-";
-        const _kalba = $('#language').val() || "-";
-
-        const filters = {
-            fakultetas: _fakultetas,
-            programa: _programa,
-            studijuTipas: _studijuTipas,
-            semestras: _semestras,
-            salis: _salis,
-            miestas: _miestas,
-            regionas: _regionas,
-            universitetas: _universitetas,
-            kalba: _kalba
-        };
-        const res = await queryUniversities(filters);
-        format_and_output(res);
-    });
-});
+}
 
 async function fetchFaculties() {
     const querySnapshot = await getDocs(collection(db, 'VU_courses'));
     const faculties = [];
     if (!querySnapshot.empty) {
-        querySnapshot.forEach(doc => {
-            faculties.push(doc.id);
+        querySnapshot.forEach(docu => {
+            faculties.push(docu.id);
         });
     }
     return faculties;
