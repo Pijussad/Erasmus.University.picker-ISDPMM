@@ -233,7 +233,7 @@ async function format_and_output(res){
                         <div class="university-details-column">
                             <h5>Fakultetas</h5>
                             <p>${univ.fakultetas || '-'}</p>
-                            <h5>Studijų sritys</h5>
+                            <h5>Studijų sritis</h5>
                             <p>${univ.sritis || '-'}</p>
                             <h5>Kalbos</h5>
                             <p>${langs}</p>
