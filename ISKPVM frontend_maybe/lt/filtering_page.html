@@ -47,15 +47,89 @@
             display: block;
         }
         .university-details {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 2rem;
         }
         .university-details-column {
-            flex: 1;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 20px;
         }
         .university-details-column h5 {
             margin-top: 1rem;
             font-weight: 600;
+        }
+        .qs-rank-badge {
+            width: 50px;
+            height: 60px;
+            background: #ffe680;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1rem;
+            color: #333;
+            flex-direction: column;
+            box-shadow: 0 0 3px rgba(0,0,0,0.2);
+            margin-top: 1rem;
+        }
+        .qs-rank-badge span {
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        .qs-rank-badge .rank-num {
+            font-size: 1rem;
+        }
+        .comments-section {
+            background: #fdfdfd;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+        .comment-item {
+            margin-bottom: 10px;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .comment-item.pinned {
+            background-color: #fff7d1;
+        }
+        .comment-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .comment-item strong {
+            font-size: 0.9rem;
+        }
+        .comment-item p {
+            font-size: 0.85rem;
+            margin: 0;
+        }
+        .comment-date {
+            font-size: 0.75rem;
+            color: #666;
+        }
+        .comment-input {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 10px;
+        }
+        .comment-input input {
+            flex: 1;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 5px 10px;
+            font-size: 0.85rem;
+        }
+        .comment-input button {
+            border-radius: 20px;
+            font-size: 0.85rem;
         }
     </style>
 </head>
