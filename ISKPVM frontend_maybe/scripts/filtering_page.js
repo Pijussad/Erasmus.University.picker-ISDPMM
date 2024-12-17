@@ -154,7 +154,7 @@ function format_and_output(res){
                             <p>${pragyvenimoIslaidos}</p>
                             <h5>Stipendija</h5>
                             <p>${stipendija}</p>
-                            <h5 style="margin-top:1.5rem;">QS Rank</h5>
+                            <h5 style="margin-top:1.5rem;">QS įvertinimas</h5>
                             <div class="qs-rank-badge">
                                 <div class="rank-num">${qsRank}</div>
                                 <span>Rank</span>
