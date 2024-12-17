@@ -41,6 +41,36 @@
             width: 500px;
         }
 
+        #messageList {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        #messageList th, #messageList td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #messageList tr:nth-child(even) { /* Style alternating rows */
+            background-color: #f2f2f2;
+        }
+
+        #messageList button {
+            background-color: #761f1f; /* Green */
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
     </style>
 </head>
 
@@ -77,9 +107,14 @@
             <div class="admin-field">
                 
                 <div id="list">
-                   <ol id="messageList">
-
-                   </ol>
+                   <table id="messageList">
+                        <tr>
+                            <th>UV</th>
+                            <th>Zinute</th>
+                            <th>Naudotojas</th>
+                            <th>Data</th>
+                        </tr>
+                   </table>
                 </div>
 
             </div>

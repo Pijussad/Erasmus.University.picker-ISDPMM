@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erasmus Guide (Admin)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/flatly/bootstrap.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="style.css"> <!-- Assuming you have a shared style.css -->
+    <script type="module" src="admin_page.js"></script> <!--- Separate JS file for admin -->
+
+    <style>
+        .smth {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: start;
+            flex-wrap: wrap; 
+        }
+
+        .profile-container {
+            width: 45%;
+            margin: 1rem; 
+            min-width: 300px; 
+        }
+
+        @media (max-width: 768px) { 
+            .profile-container {
+                width: 90%; 
+            }
+        }
+
+        .admin-field {
+            margin-bottom: 1rem;
+            min-width: 500px;
+        }
+
+        #list {
+            width: 500px;
+        }
+
+        #messageList {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        #messageList th, #messageList td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #messageList tr:nth-child(even) { /* Style alternating rows */
+            background-color: #f2f2f2;
+        }
+
+        #messageList button {
+            background-color: #761f1f; /* Green */
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+    </style>
+</head>
+
+<body id="admin-page">
+
+    <div class="header">
+        <a class="brands" href="index.html">ERASMUS GUIDE (Admin)</a>
+        <div class="buttons">
+            <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button> <!--- Logout button -->
+        </div>
+    </div>
+
+    <div class="smth">
+
+        <!-- User Management -->
+        <div class="profile-container">
+            <h2>User Management</h2>
+            <div class="admin-field">
+                <label for="userSearch">Search:</label>
+                <input type="text" class="form-control" id="userSearch" placeholder="Enter user ID">
+            </div>
+            <div class="admin-field">
+                <button class="btn btn-primary" onclick="searchUsers()">Search</button>
+                <div id="userList">
+                   <!-- User list will be displayed here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="profile-container">
+            <h2>Notifications</h2>
+            
+            <div class="admin-field">
+                
+                <div id="list">
+                   <table id="messageList">
+                        <tr>
+                            <th>ID</th>
+                            <th>Message</th>
+                            <th>User</th>
+                            <th>Date</th>
+                        </tr>
+                   </table>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

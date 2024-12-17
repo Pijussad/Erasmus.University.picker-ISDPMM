@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erasmus Gidas</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/flatly/bootstrap.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="../style.css">
+    <script type="module" src="../scripts/profilio.js"></script>
+
+    <style>
+
+
+        .smth {
+            display: flex;
+            align-items: center;
+            justify-content: start;
+        }
+
+        .profile-container{
+            height:500px
+        }
+
+    </style>
+</head>
+
+<body id="profile-page" >
+
+    <div class="header">
+        <a class="brands" href="index.html">ERASMUS GIDAS</a>
+        <div class="buttons">
+            <button class="btn btn-outline-info btn-sm duk">D.U.K</button>
+            <a href="profilio_valdymas.html">
+                <button id="profilis" class="btn btn-info btn-sm">
+                    <img width="16" height="16" src="https://img.icons8.com/forma-light/64/user.png" alt="user"/>
+                </button>
+            </a>
+            <button id="prisijungti" class="btn btn-success btn-sm">Prisijungti</button>
+        </div>
+    </div>
+    <div class="smth">
+        <!-- Profile Container -->
+        <div class="profile-container">
+            <div class="profile-header d-flex flex-row mx-auto align-items-center justify-content-around">
+                <img src="https://via.placeholder.com/80" alt="Profile Picture">
+                <h2 class="ml-5">Vardenis Pavardenis</h2>
+            </div>
+            <form class="settings-form">
+                <!-- Setting 1 -->
+                <div class="form-group-settings">
+                    <label for="setting1">Nustatymas 1</label>
+                    <input type="text" class="form-control" id="setting1" placeholder="Tekstas 1">
+                </div>
+                <!-- Setting 2 -->
+                <div class="form-group-settings">
+                    <label for="setting2">Nustatymas 2</label>
+                    <input type="text" class="form-control" id="setting2" placeholder="Tekstas 1">
+                </div>
+                <!-- Delete Account -->
+                <div class="delete-account  d-flex align-items-end">
+                    Ištrinti visus naudotojo duomenis
+                </div>
+            </form>
+        </div>
+
+        <div class="profile-container">
+            <form class="settings-form">
+                <!-- Setting 1 -->
+                <div class="form-group-settings">
+                    <div class="form-label">
+                        <img class="filter-icon" src="https://img.icons8.com/?size=100&id=wSZ2E8Vjya01&format=png&color=61479a" alt="university"/>
+                        <label for="faculty">Fakultetas</label>
+                        <select class="form-select" id="faculty">
+                            <option selected>Pasirinkti fakultetą...</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Setting 2 -->
+                <div class="form-group-settings">
+                    <div class="form-label">
+                        <img class="filter-icon" src="https://img.icons8.com/?size=100&id=0junaMlOZb6G&format=png&color=61479a" alt="university"/>
+                        <label for="studyType">Studijų tipas</label>
+                        <select class="form-select" id="studyType" disabled>
+                        </select>
+                    </div>
+                </div>
+                <!-- Delete Account -->
+                <div class="form-group-settings">
+                    <div class="form-label">
+                        <img class="filter-icon" src="https://img.icons8.com/?size=100&id=wSZ2E8Vjya01&format=png&color=61479a" alt="university"/>
+                        <label for="program">Studijų programa</label>
+                        <select class="form-select" id="program" disabled>
+                        </select>
+                    </div>
+                </div>
+                <!-- Delete Account -->
+                <div class="form-group-settings">
+                    <div class="form-label">
+                        <img class="filter-icon" src="https://img.icons8.com/?size=100&id=MnXJ8TCaeQLB&format=png&color=61479a" alt="university"/>
+                        <label for="semester">Semestras</label>
+                        <select class="form-select" id="semester" disabled>
+                        </select>
+                    </div>
+                </div>
+                <!-- Delete Account -->
+                <div class="form-group-settings">
+                    <!-- Privalomi dalykai -->
+                    <div class="form-group">
+                        <label><strong>Privalomi dalykai:</strong></label>
+                        <ul class="roboto-regular">
+                            <!-- List items will be populated dynamically -->
+                        </ul>
+                        <p style="margin: 0 0 0.25rem 0.25rem;">Kreditų skaičius: 60</p>
+                    </div>
+                </div>
+                <!-- Delete Account -->
+            
+                <button id="submit" class="btn btn-primary">Submit</button>
+                
+            </form>
+
+        </div>
+
+    
+
+    </div>
+
+</body>
+
+</html>
