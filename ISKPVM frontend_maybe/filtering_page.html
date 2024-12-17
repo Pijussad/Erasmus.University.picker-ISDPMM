@@ -10,6 +10,54 @@
     <link rel="icon" href="/ISKPVM frontend_maybe/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
     <script type="module" src="filtering_page.js"></script>
+    <style>
+        .university-card {
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: box-shadow 0.3s, transform 0.3s;
+        }
+        .university-card:hover {
+            box-shadow: 0 0 8px rgba(0,0,0,0.1);
+        }
+        .university-card.expanded {
+            position: relative;
+            box-shadow: 0 0 12px rgba(0,0,0,0.15);
+            transform: scale(1.02);
+        }
+        .university-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .university-card-header img {
+            width: 60px;
+            height: 60px;
+            border-radius: 6px;
+            object-fit: cover;
+        }
+        .university-card-content {
+            margin-top: 10px;
+            display: none;
+        }
+        .university-card.expanded .university-card-content {
+            display: block;
+        }
+        .university-details {
+            display: flex;
+            gap: 2rem;
+        }
+        .university-details-column {
+            flex: 1;
+        }
+        .university-details-column h5 {
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body id="filtering-page">
@@ -33,12 +81,7 @@
         </div>
         <form id="filters-form">
             <div class="form-container" id="filter-body">
-
-                
-
                 <div class="form-panel" id="filter-body-secondary">
-
-                    <!-- Šalis -->
                     <div class="form-group">
                         <div class="form-label">
                             <img class="filter-icon" src="https://img.icons8.com/?size=100&id=P0gmIJVn1Rro&format=png&color=61479a" alt="university"/>
@@ -49,42 +92,35 @@
                         </div>
                     </div>
                     <hr style="margin: 0;border: 0;">
-                    <!-- Miestas -->
                     <div class="form-group">
                         <div class="form-label">
                             <img class="filter-icon" src="https://img.icons8.com/?size=100&id=naNpgO6CVkWW&format=png&color=61479a" alt="university"/>
                             <label for="city">Miestas</label>
                             <select class="form-select" id="city">
                                 <option selected> - </option>
-                                <option >-unimplemented-</option>
+                                <option>-unimplemented-</option>
                             </select>
                         </div>
                     </div>
-                
                     <div class="content-breaker">
                         <hr>
                         <div class="word">arba</div>
                         <hr>
                     </div>
-                
-                    <!-- Regionas -->
                     <div class="form-group">
                         <div class="form-label">
                             <img class="filter-icon" src="https://img.icons8.com/?size=100&id=k3HwOfdGB5IM&format=png&color=61479a" alt="university"/>
                             <label for="region">Regionas</label>
                             <select class="form-select" id="region">
                                 <option selected> - </option>
-                                <option >-unimplemented-</option>
+                                <option>-unimplemented-</option>
                             </select>
                         </div>
                     </div>
-                
                     <div class="content-breaker">
                         <div class="line"></div>
                         <div class="line"></div>
                     </div>
-                
-                    <!-- Universitetas -->
                     <div class="form-group">
                         <div class="form-label">
                             <img class="filter-icon" src="https://img.icons8.com/?size=100&id=wSZ2E8Vjya01&format=png&color=61479a" alt="university"/>
@@ -94,9 +130,7 @@
                             </select>
                         </div>
                     </div>
-                
                     <div style="display: flex;">
-                        <!-- Studijų kalba -->
                         <div class="form-group" style="flex: 1; padding-bottom: 0.5rem;">
                             <div class="form-label">
                                 <img class="filter-icon" src="https://img.icons8.com/?size=100&id=trLP73OEMPvT&format=png&color=61479a" alt="university"/>
@@ -106,7 +140,6 @@
                                 <option selected>English</option>
                             </select>
                         </div>
-                        <!-- QS įvertinimas -->
                         <div class="form-group" style="flex: 1; padding-bottom: 0.5rem;">
                             <div class="form-label">
                                 <img class="filter-icon" src="https://img.icons8.com/?size=100&id=KuQXYVYhKuCb&format=png&color=61479a" alt="university"/>
@@ -117,8 +150,6 @@
                             </select>
                         </div>
                     </div>
-                
-                    <!-- Pragyvenimo išlaidos -->
                     <div class="form-group">
                         <div class="form-label">
                             <img class="filter-icon" src="https://img.icons8.com/?size=100&id=ldvZl2FZHpxr&format=png&color=61479a" alt="university"/>
@@ -129,43 +160,28 @@
                             <div id="livingCostsN">123</div>
                         </div>
                     </div>
-                
                 </div>
-                
             </div>
-
-            
-            
         </form>
         <div class="form-panel" id="filter-footer">
-            <!-- Buttons -->
             <div class="results-count">Rezultatų: [content]</div>
-
             <div class="buttons">
                 <button type="reset" class="btn btn-danger">Atšaukti</button>
                 <button type="submit" class="btn btn-primary">Filtruoti</button>
             </div>
         </div>
     </div>
-    
+
     <div class="container">
-        <div id="resOutput" class="form-panel">asd</div>
+        <div id="resOutput" class="form-panel"></div>
     </div>
 
-
-
     <script>
-        // Update living cost display based on slider
         var livingCostsSlider  = $("#livingCosts");
         var livingCostsSliderN = $("#livingCostsN");
-
         livingCostsSlider.on('input', function (event) {
             livingCostsSliderN.html(`${livingCostsSlider.val()}`.padStart(10, " "))
-            //console.log(`${livingCostsSlider.val()}`)
         });
-
     </script>
-    
 </body>
-
 </html>
