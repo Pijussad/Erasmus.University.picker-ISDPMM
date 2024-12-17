@@ -93,23 +93,20 @@ function format_and_output(res){
 // Obtaining information from filter page options
 $(document).ready(async function () {
 
+    $('button.btn-primary').on('click',async function() {
+        console.log("llo");
 
-
-    // Forma baigta, turime rodiklius pagal kuriuos reikia rasti universitetus
-    $('#filters-form').on('submit', async function (event) {
-        event.preventDefault(); 
-
-        const _fakultetas = $('#faculty').val();
-        const _programa = $('#program').val();
-        const _studijuTipas = $('#studyType').val();
-        const _semestras = $('#semester').val();
-        const _salis = $('#country').val();
-        const _miestas = $('#city').val();
-        const _regionas = $('#region').val();
-        const _universitetas = $('#university').val();
-        const _kalba = $('#language').val();
-        const _qsIvertinimas = $('#qsRating').val();
-        const _pragyvenimoIslaidos = $('#livingCosts').val();
+        const _fakultetas = $('#faculty').val() || "-";
+        const _programa = $('#program').val() || "-" || "-";
+        const _studijuTipas = $('#studyType').val() || "-";
+        const _semestras = $('#semester').val() || "-";
+        const _salis = $('#country').val() || "-";
+        const _miestas = $('#city').val() || "-";
+        const _regionas = $('#region').val() || "-";
+        const _universitetas = $('#university').val() || "-";
+        const _kalba = $('#language').val() || "-";
+        const _qsIvertinimas = $('#qsRating').val() || "-";
+        const _pragyvenimoIslaidos = $('#livingCosts').val() || "-";
 
         //console.log(`Fakultetas: ${fakultetas}\nStudijų programa: ${programa}\nStudijų tipas: ${studijuTipas}\nSemestras: ${semestras}\nŠalis: ${salis}\nMiestas: ${miestas}\nRegionas: ${regionas}\nUniversitetas: ${universitetas}\nStudijų kalba: ${kalba}\nQS įvertinimas: ${qsIvertinimas}\nPragyvenimo išlaidos: ${pragyvenimoIslaidos}\n\n`);
 
@@ -127,7 +124,8 @@ $(document).ready(async function () {
             // pragyvenimoIslaidos: _pragyvenimoIslaidos
         };
 
-        //console.log(filters);
+        console.log(filters);
+        console.log("Jello");
 
         const res = await queryUniversities(filters);
 
@@ -140,6 +138,9 @@ $(document).ready(async function () {
 
         // Connection to DB to get information
     });
+    
+
+
 
 });
 

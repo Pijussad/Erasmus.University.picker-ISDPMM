@@ -29,7 +29,39 @@ $(document).ready(async function () {
         window.location.href = "index.html"; // Redirect to the main page
     }
 
-    
+    async function loadMessages() {
+        try {
+            const messagesRef = collection(db, "messages"); // Replace "messages" with your collection name
+            const querySnapshot = await getDocs(messagesRef);
+
+            const messageList = document.getElementById("messageList");
+            messageList.innerHTML = ""; // Clear previous messages
+
+            querySnapshot.forEach((doc) => {
+                const messageData = doc.data();
+                const messageItem = document.createElement("li");
+                const messageLink = document.createElement("a");
+                
+                messageLink.href = messageData.url || "#"; // Use the URL if available, otherwise "#"
+                messageLink.textContent = `${messageData.title || "Untitled"}: ${messageData.message || ""}`; // Display title and message
+                
+
+
+                messageItem.appendChild(messageLink);
+                messageList.appendChild(messageItem);
+            });
+
+
+        } catch (error) {
+            console.error("Error loading messages:", error);
+            // Handle error (e.g., display an error message)
+             const messageList = document.getElementById("messageList");
+             messageList.innerHTML = "<li>Error loading messages.</li>";
+
+        }
+    }
+
+    loadMessages();
 
 
 
