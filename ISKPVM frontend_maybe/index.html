@@ -21,7 +21,7 @@
             }
         });
     });
-
+    
 </script>
 
 <body id="main-page">
@@ -30,14 +30,14 @@
         <a class="brands" href="index.html">ERASMUS GIDAS</a>
         <div class="buttons">
             <button class="btn btn-outline-info btn-sm duk">D.U.K</button>
-            
-                  
-            <a id="profilis" class="btn btn-info btn-sm" href='profilio_valdymas.html'>
-                <img width="16" height="16" src="https://img.icons8.com/forma-light/64/user.png" alt="user"/>
+            <a href="profilio_valdymas.html">
+                <button id="profilis" class="btn btn-info btn-sm" style="display: none;">
+                    <img width="16" height="16" src="https://img.icons8.com/forma-light/64/user.png" alt="user">
+                </button>
             </a>
-
             <!-- <a href="dumy_login_to_vu.html"> -->
             <button id="prisijungti" class="btn btn-success btn-sm">Prisijungti</button>
+            <!-- </a> -->
         </div>
     </div>
 
@@ -69,19 +69,5 @@
             </div>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const prisijungtiButton = document.getElementById('prisijungti');
-            prisijungtiButton.addEventListener('click', function() {
-                const profilisButton = document.getElementById('profilis');
-                if (profilisButton.style.display == 'flex') {
-                    profilisButton.style.display = 'none';
-                } else {
-                    profilisButton.style.display = 'flex';
-                }
-            });
-        });
-    </script>
 </body>
 </html>
