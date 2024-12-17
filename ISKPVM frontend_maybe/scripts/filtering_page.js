@@ -14,25 +14,31 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
-const reports = collection(db, "Reports")
+const reports = collection(db, "Reports");
+
+let all_universities = [];
+
+function getCurrentUserID() {
+    return "Nežinomas";
+}
 
 async function queryUniversities(filters) {
     try {
         let q = collection(db, "universities");
-        let queries = [];
+        let queriesArr = [];
         for (const [field, value] of Object.entries(filters)) {
-            if (value !== "-") {
+            if (value !== "-" && value !== "" && value !== null && value !== undefined) {
                 if (field === "kalba"){
-                    queries.push(where("kalbos", "array-contains", value));
+                    queriesArr.push(where("kalbos", "array-contains", value));
                 } else if (field === "fakultetas"){
-                    queries.push(where(field, "==", value));
+                    queriesArr.push(where(field, "==", value));
                 } else {
-                    queries.push(where(field, "==", value));
+                    queriesArr.push(where(field, "==", value));
                 }
             }
         }
-        if (queries.length > 0) {
-            q = query(q, ...queries);
+        if (queriesArr.length > 0) {
+            q = query(q, ...queriesArr);
         }
         const querySnapshot = await getDocs(q);
         const results = [];
@@ -46,10 +52,66 @@ async function queryUniversities(filters) {
     }
 }
 
-function uniObjToString(univ){
-    return Object.entries(univ)
-        .map(([field, value]) => `${field}=${value}`)
-        .join("\n");
+async function loadCommentsForUniversity(universityCode) {
+    const commentsRef = collection(db, "Comments");
+    const q = query(commentsRef, where("allowed", "==", true), where("code", "==", universityCode));
+    const querySnapshot = await getDocs(q);
+    const comments = [];
+    querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        comments.push({
+            id: doc.id,
+            text: data.commentText,
+            userID: data.userID || "Nežinomas",
+            messageTime: data.messageTime,
+            pinned: data.pinned || false
+        });
+    });
+
+    const pinnedComments = comments.filter(c => c.pinned);
+    const normalComments = comments.filter(c => !c.pinned);
+    return [...pinnedComments, ...normalComments];
+}
+
+function formatDate(timestamp) {
+    if (!timestamp) return "";
+    const date = timestamp.toDate();
+    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+}
+
+function appendCommentsToSection(card, comments) {
+    const commentsContainer = card.find(".comments-section");
+    commentsContainer.empty();
+    if (comments.length === 0) {
+        const noComment = $("<div class='comment-item'><strong>Nėra komentarų</strong></div>");
+        commentsContainer.append(noComment);
+        return;
+    }
+    comments.forEach(comment => {
+        const dateStr = formatDate(comment.messageTime);
+        const item = $(`
+            <div class="comment-item ${comment.pinned ? 'pinned' : ''}">
+                <div class="comment-item-header">
+                    <strong>${comment.userID}</strong>
+                    <span class="comment-date">${dateStr}</span>
+                </div>
+                <p>${comment.text}</p>
+            </div>
+        `);
+        commentsContainer.append(item);
+    });
+}
+
+async function addComment(universityCode, commentText) {
+    const userID = getCurrentUserID();
+    await addDoc(collection(db, "Comments"), {
+        allowed: true,
+        code: universityCode,
+        commentText: commentText,
+        userID: userID,
+        messageTime: serverTimestamp(),
+        pinned: false
+    });
 }
 
 function format_and_output(res){
@@ -57,13 +119,20 @@ function format_and_output(res){
     out.empty();
     $(".results-count").text(`Rezultatų: ${res.length}`);
     res.forEach((univ) => {
+        const image = univ.imageUrl || 'https://via.placeholder.com/60';
+        const countryCity = (univ.salis || '') + (univ.miestas ? ', ' + univ.miestas : '');
+        const langs = (univ.kalbos || []).join(', ') || '-';
+        const pragyvenimoIslaidos = univ.pragyvenimoIslaidos || '-';
+        const stipendija = univ.stipendija || '-';
+        const qsRank = univ.qsRank || 45; // fallback if not provided
+
         const card = $(`
             <div class="university-card">
                 <div class="university-card-header">
-                    <img src="https://via.placeholder.com/60" alt="Univ Image">
+                    <img src="${image}" alt="Univ Image">
                     <div>
                         <h4 style="margin:0;">${univ.universitetas}</h4>
-                        <small>${univ.salis || ''}${univ.miestas ? ', ' + univ.miestas : ''}</small>
+                        <small>${countryCity}</small>
                     </div>
                 </div>
                 <div class="university-card-content">
@@ -74,55 +143,80 @@ function format_and_output(res){
                             <h5>Studijų sritys</h5>
                             <p>${univ.sritis || '-'}</p>
                             <h5>Kalbos</h5>
-                            <p>${(univ.kalbos || []).join(', ') || '-'}</p>
+                            <p>${langs}</p>
                         </div>
                         <div class="university-details-column">
                             <h5>Studijų lygis</h5>
                             <p>${univ.studijuTipas || '-'}</p>
                             <h5>URL</h5>
                             <a href="${univ.url || '#'}" target="_blank">${univ.url || 'N/A'}</a>
+                            <h5>Pragyvenimo išlaidos</h5>
+                            <p>${pragyvenimoIslaidos}</p>
+                            <h5>Stipendija</h5>
+                            <p>${stipendija}</p>
+                            <h5 style="margin-top:1.5rem;">QS įvertinimas</h5>
+                            <div class="qs-rank-badge">
+                                <div class="rank-num">${qsRank}</div>
+                                <span>Rank</span>
+                            </div>
                         </div>
-                        <div>
+                        <div class="university-details-column">
                             <button id="pranestiKlaida" class="btn btn-danger btn-sm">Pranešti klaidą</button>
+                            <h5 style="margin-top:1.5rem;">Komentarai</h5>
+                            <div class="comments-section"></div>
+                            <div class="comment-input">
+                                <input type="text" placeholder="Rašyti komentarą..." class="new-comment-input"/>
+                                <button class="btn btn-primary btn-sm send-comment-btn">Siųsti</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         `);
-        card.on('click', function() {
-            $(this).toggleClass('expanded');
-        });
-        out.append(card);
-    });
 
-    out.on('click', '#pranestiKlaida', async function(event){
-        const card = $(this).closest('.university-card');
-
-        const universitetas = card.find('h4').text();
-
-        console.log("Pranešti klaidą clicked for:", universitetas);
-
-        const userInput = prompt("Aprašykite klaidą", "nothing");
-
-        if (userInput === null) {
-            console.log("User cancelled the input.");
-        } else {
-            try {
-                console.log("User entered:", userInput);
-                const reportData = {
-                    kodas: universitetas,
-                    message: userInput,
-                    messageTime: serverTimestamp(),
-                    userId: "idk"
+        card.on('click', async function(e) {
+            if (!$(e.target).closest('button, input, .comments-section, .comment-input, a').length) {
+                $(this).toggleClass('expanded');
+                if ($(this).hasClass('expanded')) {
+                    const comments = await loadCommentsForUniversity(univ.universitetas);
+                    appendCommentsToSection(card, comments);
                 }
-    
-                const docRef = await addDoc(collection(db, "Reports"), reportData);
-                console.log("Report written with ID: ", docRef.id);
             }
-            catch (e) {
-                console.error("Error adding report: ", e);
+        });
+
+        card.find('#pranestiKlaida').on('click', async function(event){
+            event.stopPropagation();
+            const universitetas = univ.universitetas;
+            const userInput = prompt("Aprašykite klaidą", "nothing");
+            if (userInput !== null) {
+                try {
+                    const reportData = {
+                        kodas: universitetas,
+                        message: userInput,
+                        messageTime: serverTimestamp(),
+                        userId: "idk"
+                    }
+                    await addDoc(collection(db, "Reports"), reportData);
+                }
+                catch (e) {
+                    console.error("Error adding report: ", e);
+                }
             }
-        }
+        });
+
+        card.find('.send-comment-btn').on('click', async function(e){
+            e.stopPropagation();
+            const commentInput = card.find('.new-comment-input');
+            const text = commentInput.val().trim();
+            if (text) {
+                await addComment(univ.universitetas, text);
+                const comments = await loadCommentsForUniversity(univ.universitetas);
+                appendCommentsToSection(card, comments);
+                commentInput.val("");
+            }
+        });
+
+        out.append(card);
     });
 }
 
@@ -139,6 +233,7 @@ $(document).ready(async function () {
         kalba: "-"
     };
     const res = await queryUniversities(emptyfilters);
+    all_universities = res;
     if (res.length != 0){
         format_and_output(res);
         find_unique_and_populate_html(res);
@@ -171,9 +266,6 @@ $(document).ready(async function () {
         const res = await queryUniversities(filters);
         format_and_output(res);
     });
-
-
-
 });
 
 async function fetchFaculties() {
