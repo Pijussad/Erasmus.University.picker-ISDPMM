@@ -39,9 +39,6 @@ async function queryUniversities(filters) {
                     }
                 } else if (field === "qsRating") {
                     let qsFilter = value;
-                    // qsFilter can be "1-300", "301-600", "601-900", "900+"
-                    // We'll handle QS rating filtering after we get the results (in code), since QS might not be numeric in DB directly.
-                    // We'll store this selection and filter after fetching.
                 } else {
                     queriesArr.push(where(field, "==", value));
                 }
