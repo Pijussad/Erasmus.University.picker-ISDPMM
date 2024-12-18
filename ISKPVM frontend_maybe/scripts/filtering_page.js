@@ -16,6 +16,7 @@ const db  = getFirestore(app);
 const reports = collection(db, "Reports");
 
 let all_universities = [];
+let currentDisplayedResults = []; 
 let sortField = "none";
 let sortAsc = true;
 
@@ -38,7 +39,7 @@ async function queryUniversities(filters) {
                         queriesArr.push(where(field, "==", value));
                     }
                 } else if (field === "qsRating") {
-                    let qsFilter = value;
+                    // We will filter QS after retrieval
                 } else {
                     queriesArr.push(where(field, "==", value));
                 }
@@ -142,12 +143,16 @@ async function fetchAllCountryData(countries) {
 
 function parseQSFilter(value, qsVal) {
     if (!value || value === "-") return true; 
-    const qsNum = parseInt(qsVal === '-'? '9999999' : qsVal,10); 
-    if (value === "1-300") return qsNum >=1 && qsNum <=300;
+    const qsNum = parseInt(qsVal === '-'? '0': qsVal,10);
+    if (value === "1-300") return qsNum>=1 && qsNum<=300;
     if (value === "301-600") return qsNum>=301 && qsNum<=600;
     if (value === "601-900") return qsNum>=601 && qsNum<=900;
     if (value === "900+") return qsNum>=901;
     return true;
+}
+
+function valOrZero(val){
+    return val === '-'?0:parseInt(val,10);
 }
 
 function sortResults(univs) {
@@ -161,14 +166,14 @@ function sortResults(univs) {
             if (nameA > nameB) return sortAsc? 1 : -1;
             return 0;
         } else if (sortField === "cost") {
-            const costA = parseInt(a.countryData.costOfLiving === '-' ? '9999999' : a.countryData.costOfLiving,10);
-            const costB = parseInt(b.countryData.costOfLiving === '-' ? '9999999' : b.countryData.costOfLiving,10);
+            const costA = valOrZero(a.countryData.costOfLiving);
+            const costB = valOrZero(b.countryData.costOfLiving);
             if (costA < costB) return sortAsc? -1 : 1;
             if (costA > costB) return sortAsc? 1 : -1;
             return 0;
         } else if (sortField === "qs") {
-            const qsA = parseInt(a.qs === '-'? '9999999': a.qs,10);
-            const qsB = parseInt(b.qs === '-'? '9999999': b.qs,10);
+            const qsA = valOrZero(a.qs);
+            const qsB = valOrZero(b.qs);
             if (qsA < qsB) return sortAsc? -1 : 1;
             if (qsA > qsB) return sortAsc? 1 : -1;
             return 0;
@@ -188,24 +193,24 @@ async function format_and_output(res){
         return parseQSFilter(qsFilterVal, u.qs || '-');
     });
 
-    const filteredResults = [];
     const uniqueCountries = new Set();
-
     for (let univ of filteredByQS) {
         if (univ.salis) uniqueCountries.add(univ.salis);
     }
 
     const countryDataMap = await fetchAllCountryData(Array.from(uniqueCountries));
 
+    const filteredResults = [];
     for (let univ of filteredByQS) {
         const countryData = countryDataMap[univ.salis] || {costOfLiving:'-',rentCost:'-',scholarship:'-'};
-        const costOfLivingVal = parseInt(countryData.costOfLiving === '-' ? "9999999" : countryData.costOfLiving,10);
+        const costOfLivingVal = valOrZero(countryData.costOfLiving);
         if (costOfLivingVal <= livingCostsMax) {
             filteredResults.push({...univ, countryData});
         }
     }
 
-    const sorted = sortResults(filteredResults);
+    currentDisplayedResults = filteredResults; 
+    const sorted = sortResults(currentDisplayedResults);
 
     $(".results-count").text(`Rezultatų: ${sorted.length}`);
 
@@ -361,6 +366,7 @@ $(document).ready(async function () {
             qsRating: _qsRating
         };
         const res = await queryUniversities(filters);
+        all_universities = res; 
         await format_and_output(res);
     });
 
@@ -375,7 +381,7 @@ $(document).ready(async function () {
     });
 
     function reSortAndDisplay() {
-        format_and_output(all_universities);
+        format_and_output(currentDisplayedResults); 
     }
 });
 
