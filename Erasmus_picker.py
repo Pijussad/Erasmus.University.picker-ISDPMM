@@ -39,17 +39,41 @@ app = firebase_admin.initialize_app(cred)
 db = firestore.client()
 
 # Constants
-SUBJECT = "Information systems testing and maintenance"
-CONFIDENCE_THRESHOLD = 40  # Lowered from 70
+SUBJECTS = [
+    "Akademinė ir mokslinė anglų kalba C1",
+    "Informacinės ir grupinio darbo sistemos",
+    "Kompiuterių architektūra",
+    "Matematika informacinėms sistemoms",
+    "Procedūrinis programavimas",
+    "Algoritmai ir duomenų struktūros",
+    "Diskrečioji matematika informacinėms sistemoms",
+    "Duomenų bazių valdymo sistemos",
+    "Objektinis programavimas",
+    "Kompiuterių tinklai",
+    "Naudotojo sąsajos kūrimas",
+    "Verslo procesų modeliavimas",
+    "Operacinės sistemos",
+    "Optimizavimo metodai",
+    "Statistiniai duomenų analizės metodai",
+    "Duomenų tyryba ir mašininis mokymasis",
+    "Reikalavimų inžinerijos pagrindai",
+    "Informacinių sistemų kūrimo projektų valdymo metodikos",
+    "Informacinės saugos pagrindai",
+    "Kursinis darbas",
+    "Programų sistemų kokybė",
+    "Bakalauro baigiamasis darbas (kryptis: informatikos inžinerija)",
+    "Profesinė praktika (Informacinių sistemų inžinerija)"
+]
+CONFIDENCE_THRESHOLD = 70
 MAX_SEARCH_ATTEMPTS = 4
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-MAX_CONTENT_LENGTH = 5000
+MAX_CONTENT_LENGTH = 1500
 
 def get_unique_universities():
     """Get unique universities from Firestore."""
     docs = (
         db.collection("universities")
-        .where(filter=FieldFilter("salis", "==", "Latvija"))
+        .where(filter=FieldFilter("salis", "in", ["Latvija", "Estija"]))
         .stream()
     )
     
@@ -142,41 +166,32 @@ def extract_text_content(html_content):
         return None
 
 def search_subject(query):
-    """Search for subject information with improved parsing."""
-    if not query or query.strip() == "":
-        logger.warning("Empty search query received")
-        return []
-        
-    search_url = f"https://www.google.com/search?q={quote_plus(query)}"
+    """Search using Brave Search API with rate limiting"""
+    brave_url = "https://api.search.brave.com/res/v1/web/search"
     headers = {
-        'User-Agent': USER_AGENT,
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5'
+        "Accept": "application/json",
+        "Accept-Encoding": "gzip",
+        "X-Subscription-Token": os.getenv('BRAVE_API_KEY')
     }
-    
-    logger.info(f"Performing search with query: {query}")
-    
-def search_subject(query):
-    search_url = f"https://www.google.com/search?q={quote_plus(query)}"
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
-    
-    logger.info(f"Searching with query: {query}")
-    
+    params = {
+        "q": query,
+        "count": 2
+    }
+
     try:
-        response = requests.get(search_url, headers=headers)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
+        # Rate limiting - 1 request per second
+        time.sleep(1)
         
-        search_results = soup.find_all('div', class_='g')
+        logger.info(f"Searching with Brave for query: {query}")
+        response = requests.get(brave_url, headers=headers, params=params)
+        response.raise_for_status()
+        results = response.json()
+        
         subject_info = []
-
-        for result in search_results[:2]:
-            title_elem = result.find('h3')
-            link_elem = result.find('a')
-
-            if title_elem and link_elem:
-                title = title_elem.text
-                link = extract_url(link_elem['href'])
+        for result in results.get('web', {}).get('results', []):
+            title = result.get('title')
+            link = result.get('url')
+            if title and link:
                 webpage_content = fetch_webpage_content(link)
                 if webpage_content:
                     extracted_text = extract_text_content(webpage_content)
@@ -184,14 +199,13 @@ def search_subject(query):
                         "title": title,
                         "link": link,
                         "content": extracted_text,
-                        "type": "pdf" if link.lower().endswith('.pdf') else "html"  # Added this line
+                        "type": "pdf" if link.lower().endswith('.pdf') else "html"
                     })
-                    print(f"Found result: {title} ({link})")
-
-        return subject_info
+                    print(f"Found result (Brave): {title} ({link})")
         
+        return subject_info
     except Exception as e:
-        logger.error(f"Error searching with query '{query}': {str(e)}")
+        logger.error(f"Brave search error for query '{query}': {str(e)}")
         return []
 
 def analyze_subject(university_name, subject, subject_info, local_language):
@@ -206,12 +220,14 @@ No program information available.
 Explanation: No relevant course information was found in the search results. The university's offerings could not be determined from the available data."""
     
     system_prompt = f'''
-You are an AI assistant analyzing university course offerings. Your task is to determine if {university_name} offers courses related to {subject} based on the provided information. Consider only courses taught in English.
+You are an AI assistant analyzing university course offerings. Your task is to determine if {university_name} offers courses related to {subject}(in lithuanian it is called like that) based on the provided information. Consider only courses taught in English.
 
 Consider the following:
-1. Direct mentions of subjects closely related to {subject} taught in English.
-2. Related courses or topics that might include content on {subject} taught in English.
+1. Direct mentions of subjects closely related to {subject}(it is lithuanian subject name, translate it to english) taught in English.
+2. Related courses or topics that might include content on {subject}(it is lithuanian subject name, translate it to english) taught in English.
 3. is it bachelor program?
+
+dont put links in descriptions
 
 Provide:
 1. Whether the subject is likely offered in English (Yes/No/Unclear)
@@ -221,9 +237,10 @@ Provide:
 If there's no clear evidence of English-language offerings, use "Unclear" with a lower confidence.
 '''
 
+    limited_content = json.dumps(subject_info, indent=2)[-3000:]
     user_prompt = f'''
 Analyze the following information about {subject} at {university_name}, considering only English-language offerings:
-{json.dumps(subject_info, indent=2)}
+{limited_content}
 
 Does the university likely offer courses related to {subject} in English?
 Respond using this format:
@@ -259,8 +276,8 @@ def generate_additional_search_terms(university, subject, previous_queries):
     system_prompt = f'''
     You are an AI assistant tasked with generating broad but relevant search terms to find university course information.
     The university is {university['name']} in {university['country']}, and the local language is {university['language']}.
-    The subject we're looking for is "{subject}".
-
+    The subject we're looking in lithuanian is called "{subject}"(translate it in a language of prompt).
+    dont put links in descriptions
     Consider these strategies:
     1. Break down the subject into broader component terms
     2. Use alternative names for the subject area
@@ -271,10 +288,10 @@ def generate_additional_search_terms(university, subject, previous_queries):
     '''
 
     user_prompt = f'''
-    Create 4 search queries to find information about {subject}-related courses at {university['name']}.
+    Create 4 search queries to find information about {subject}(translate it to apropriate language)-related courses at {university['name']}.
     Make the queries more general but still relevant.
     Include both:
-    - One query using site:{get_university_domain(university['name'])}
+    - One query using oficial university website
     - One query with filetype:pdf
     - Mix of English and {university['language']} terms
     - Focus on broader related terms like "computer science", "IT", "software", etc.
@@ -300,64 +317,26 @@ def generate_additional_search_terms(university, subject, previous_queries):
         logger.error(f"Error generating search terms: {str(e)}")
         # Fallback to basic queries if API fails
         return [
-            f"site:{get_university_domain(university['name'])} computer science courses",
-            f"{university['name']} information technology filetype:pdf",
-            f"{university['name']} IT studies English",
-            f"{university['name']} software engineering program"
+            f"{university['name']} courses",
+            f"{university['name']} programs",
         ]
 
-def translate_subject(subject, target_language):
-    """Translate subject to target language using Claude AI."""
-    system_prompt = f"You are a translator. Translate the following academic subject from English to {target_language}."
-    user_prompt = f"Translate '{subject}' to {target_language}."
-
+def process_university_subject(university, subject):
+    """Process a single subject for a university."""
     try:
-        response = client.messages.create(
-            model="claude-3-sonnet-20240229",
-            max_tokens=50,
-            system=system_prompt,
-            messages=[
-                {"role": "user", "content": user_prompt}
-            ]
-        )
-        return response.content[0].text.strip()
-    except Exception as e:
-        logger.error(f"Error translating subject to {target_language}: {str(e)}")
-        return subject
-
-def process_university(university):
-    """Process university with improved error handling and output."""
-    try:
-        logger.info(f"\nProcessing {university['name']}")
-        print(f"\nProcessing: {university['name']}")
+        logger.info(f"\nProcessing {subject} at {university['name']}")
+        print(f"\nProcessing: {subject} at {university['name']}")
         print("-" * 50)
         
         all_subject_info = []
         previous_queries = []
-        
-        # Translate subject
-        translated_subject = translate_subject(SUBJECT, university['language'])
-        print(f"Translated subject: {translated_subject}\n")
         
         search_attempt = 0
         confidence = 0
         final_analysis = None
         
         while confidence <= CONFIDENCE_THRESHOLD and search_attempt < MAX_SEARCH_ATTEMPTS:
-            # Generate search queries
-            if search_attempt == 0:
-                # Initial queries - more general and targeted
-                base_queries = [
-                    f"site:{get_university_domain(university['name'])} computer science",
-                    f"{university['name']} information systems English",
-                    f"{university['name']} IT courses filetype:pdf",
-                    f"{university['name']} study programs software testing"
-                ]
-                queries = [q for q in base_queries if q.strip()]
-            else:
-                # Generate additional queries
-                queries = generate_additional_search_terms(university, SUBJECT, previous_queries)
-            
+            queries = generate_additional_search_terms(university, subject, previous_queries)
             print(f"\nSearch Attempt {search_attempt + 1}")
             print("Queries:")
             
@@ -368,22 +347,12 @@ def process_university(university):
                 previous_queries.append(query)
                 print(f"- {query}")
                 
-                # Perform search
                 new_subject_info = search_subject(query)
                 if new_subject_info:
-                    print(f"Found {len(new_subject_info)} results:")
-                    for info in new_subject_info:
-                        print(f"  - {info['title']}")
-                        print(f"    URL: {info['link']}")
-                        print(f"    Type: {info['type']}")
-                        print(f"    Content length: {len(info['content'])} characters")
-                        print(f"    Preview: {info['content'][:150]}...")
+                    print(f"Found {len(new_subject_info)} results")
                     all_subject_info.extend(new_subject_info)
-                else:
-                    print("  No results found")
-            
-            # Analyze results
-            analysis = analyze_subject(university['name'], SUBJECT, all_subject_info, university['language'])
+                
+            analysis = analyze_subject(university['name'], subject, all_subject_info, university['language'])
             confidence = get_confidence(analysis)
             final_analysis = analysis
             
@@ -392,9 +361,10 @@ def process_university(university):
             search_attempt += 1
             if confidence <= CONFIDENCE_THRESHOLD and search_attempt < MAX_SEARCH_ATTEMPTS:
                 print(f"Confidence below threshold. Attempting additional search.")
-                time.sleep(random.uniform(1, 2))  # Prevent rate limiting
+                time.sleep(random.uniform(1, 2))
         
         return {
+            "subject": subject,
             "subject_info": all_subject_info,
             "analysis": final_analysis,
             "queries": previous_queries,
@@ -403,105 +373,86 @@ def process_university(university):
         }
         
     except Exception as e:
-        logger.error(f"Error processing university {university['name']}: {str(e)}")
+        logger.error(f"Error processing {subject} for {university['name']}: {str(e)}")
         return {
+            "subject": subject,
             "subject_info": [],
             "analysis": "Error occurred during analysis",
-            "queries": previous_queries,
+            "queries": previous_queries if 'previous_queries' in locals() else [],
             "error": str(e),
             "confidence": 0,
             "search_attempts": search_attempt if 'search_attempt' in locals() else 0
         }
 
-def get_university_domain(university_name):
-    """Get university domain name for site-specific searches."""
-    # Add common university domains - extend this list as needed
-    domain_mapping = {
-        "Liepajas Universitate": "liepu.lv",
-        "Latvijas Universitate": "lu.lv",
-        "Riga Technical University": "rtu.lv",
-        "Alberta Koledža": "alberta-koledza.lv"
-    }
-    return domain_mapping.get(university_name, "")
+def save_results(results, timestamp, universities):
+    """Save results to both Firestore and local file."""
+    collection_name = f'university_analysis_{timestamp}'
+    
+    # Create lookup dictionary for quick access
+    university_lookup = {uni['name']: uni for uni in universities}
+    
+    for university_name, university_data in results.items():
+        university_info = university_lookup.get(university_name)
+        for subject, subject_data in university_data.items():
+            try:
+                university_doc = db.collection(collection_name).document(university_name)
+                subject_doc = university_doc.collection('MIF').document(subject)
+                
+                subject_doc.set({
+                    'subject': subject,
+                    'analysis': subject_data['analysis'],
+                    'confidence': subject_data['confidence'],
+                    'salis': university_info['country'] if university_info else None
+                })
+                
+                logger.info(f"Saved analysis for {subject} at {university_name} to Firestore")
+            except Exception as e:
+                logger.error(f"Error saving results for {subject} at {university_name} to Firestore: {str(e)}")
+    
+    # Save to local file
+    filename = f"university_analysis_{timestamp}.json"
+    try:
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump({
+                'timestamp': time.time(),
+                'subjects': SUBJECTS,
+                'results': results
+            }, f, ensure_ascii=False, indent=2)
+        logger.info(f"Saved detailed results to {filename}")
+    except Exception as e:
+        logger.error(f"Error saving results to file: {str(e)}")
+    
+    return collection_name, filename
 
 def main():
-    """Main function with improved error handling and output formatting."""
+    """Main function with multi-subject support."""
     start_time = time.time()
     
     try:
         # Get unique universities
         universities = get_unique_universities()
         
-        # Print input universities from database
-        print("\n=== Universities from Database ===")
-        print(f"Total universities found: {len(universities)}")
-        for uni in universities:
-            print(f"\nName: {uni['name']}")
-            print(f"Country: {uni['country']}")
-            print(f"Language: {uni['language']}")
+        # Print input universities and subjects
+        print("\n=== Analysis Configuration ===")
+        print(f"Total universities: {len(universities)}")
+        print(f"Subjects to analyze: {', '.join(SUBJECTS)}")
         print("\n" + "="*40 + "\n")
         
         results = {}
         
         # Process universities with progress bar
-        for university in tqdm(universities, desc="Analyzing universities"):
-            results[university['name']] = process_university(university)
-            time.sleep(random.uniform(1, 2))
-        
-        # Print detailed analysis results
-        print("\n=== Detailed Analysis Results ===\n")
-        for university_name, data in results.items():
-            print(f"\nUniversity: {university_name}")
-            print("-" * 50)
-            print(f"Total queries used: {len(data['queries'])}")
-            print(f"Search attempts: {data['search_attempts']}")
-            print(f"Final confidence: {data['confidence']}%")
-            print(f"Total information sources found: {len(data['subject_info'])}")
-            
-            if data['subject_info']:
-                print("\nInformation sources:")
-                for info in data['subject_info']:
-                    print(f"\n- Title: {info['title']}")
-                    print(f"  URL: {info['link']}")
-                    print(f"  Type: {info['type']}")
-                    print(f"  Content preview: {info['content'][:200]}...")
-            
-            print("\nAnalysis:")
-            if data['analysis']:
-                print(data['analysis'])
-            else:
-                print("No analysis available")
-            print("=" * 50)
+        total_operations = len(universities) * len(SUBJECTS)
+        with tqdm(total=total_operations, desc="Analyzing universities") as pbar:
+            for university in universities:
+                results[university['name']] = {}
+                for subject in SUBJECTS:
+                    results[university['name']][subject] = process_university_subject(university, subject)
+                    pbar.update(1)
+                    time.sleep(random.uniform(1, 2))  # Prevent rate limiting
         
         # Save results
         timestamp = time.strftime("%Y%m%d-%H%M%S")
-        
-        # Save to Firestore
-        collection_name = f'university_analysis_{timestamp}'
-        for university_name, data in results.items():
-            try:
-                doc_ref = db.collection(collection_name).document(university_name)
-                doc_ref.set({
-                    'timestamp': firestore.SERVER_TIMESTAMP,
-                    'subject': SUBJECT,
-                    'analysis_data': data
-                }, merge=True)
-                logger.info(f"Saved analysis for {university_name} to Firestore")
-            except Exception as e:
-                logger.error(f"Error saving results for {university_name} to Firestore: {str(e)}")
-        
-        # Save to local file
-        filename = f"university_analysis_{timestamp}.json"
-        try:
-            with open(filename, 'w', encoding='utf-8') as f:
-                json.dump({
-                    'timestamp': time.time(),
-                    'subject': SUBJECT,
-                    'results': results
-                }, f, ensure_ascii=False, indent=2)
-            logger.info(f"Saved detailed results to {filename}")
-        except Exception as e:
-            logger.error(f"Error saving results to file: {str(e)}")
+        collection_name, filename = save_results(results, timestamp, universities)
         
         # Print summary
         end_time = time.time()
@@ -510,6 +461,21 @@ def main():
         print(f"Results saved to:")
         print(f"- Firestore collection: {collection_name}")
         print(f"- Local file: {filename}")
+        
+        # Print detailed analysis results
+        print("\n=== Detailed Analysis Results ===\n")
+        for university_name, subjects_data in results.items():
+            print(f"\nUniversity: {university_name}")
+            print("=" * 50)
+            for subject, data in subjects_data.items():
+                print(f"\nSubject: {subject}")
+                print("-" * 40)
+                print(f"Final confidence: {data['confidence']}%")
+                print(f"Search attempts: {data['search_attempts']}")
+                print(f"Total information sources: {len(data['subject_info'])}")
+                print("\nAnalysis:")
+                print(data['analysis'])
+                print("-" * 40)
         
     except Exception as e:
         logger.error(f"Fatal error in main: {str(e)}")
