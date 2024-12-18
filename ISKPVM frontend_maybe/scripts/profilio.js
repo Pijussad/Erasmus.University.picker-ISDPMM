@@ -19,7 +19,7 @@ const db  = getFirestore(app);
 $(document).ready(async function () {
 
     
-    
+        const atsijungtiButton = document.getElementById('atsijungti');
         const facultySelect = document.getElementById('faculty');
         const studyTypeSelect = document.getElementById('studyType');
         const programSelect = document.getElementById('program');
@@ -27,6 +27,10 @@ $(document).ready(async function () {
         const requiredSubjectsList = document.querySelector('.form-group ul'); // Assuming it's a <ul> list for required subjects
     
     
+        atsijungtiButton.addEventListener('click', function() {
+            localStorage.clear();
+        });
+
         const facultyDataPromise = fetchFaculties();
         const faculties = await facultyDataPromise;
         populateDropdown(facultySelect, faculties);
@@ -128,17 +132,6 @@ $(document).ready(async function () {
                 dropdown.appendChild(option);
             });
         }
-    
-        const prisijungtiButton = document.getElementById('prisijungti');
-            prisijungtiButton.addEventListener('click', function() {
-                const profilisButton = document.getElementById('profilis');
-                if (profilisButton.style.display == 'flex') {
-                    profilisButton.style.display = 'none'; 
-                } else {
-                    profilisButton.style.display = 'flex'; 
-                }
-            });
-    
     
         facultySelect.addEventListener('change', async function () {
             const isValidFaculty = facultySelect.value !== "Pasirinkti fakultetą...";
