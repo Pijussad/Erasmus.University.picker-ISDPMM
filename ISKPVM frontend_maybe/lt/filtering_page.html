@@ -131,6 +131,13 @@
             border-radius: 20px;
             font-size: 0.85rem;
         }
+
+        .sorting-container {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
     </style>
 </head>
 
@@ -220,7 +227,11 @@
                                 <label for="qsRating">QS įvertinimas</label>
                             </div>
                             <select class="form-select" id="qsRating">
-                                <option selected>&gt;-unimplemented-</option>
+                                <option selected>-</option>
+                                <option value="1-300">1-300</option>
+                                <option value="301-600">301-600</option>
+                                <option value="601-900">601-900</option>
+                                <option value="900+">900+</option>
                             </select>
                         </div>
                     </div>
@@ -230,9 +241,19 @@
                             <label for="livingCosts">Pragyvenimo išlaidos (mėn.)</label>
                         </div>
                         <div class="slider-container">
-                            <input type="range" class="form-range" id="livingCosts" min="0" max="2000">
+                            <input type="range" class="form-range" id="livingCosts" min="0" max="10000">
                             <div id="livingCostsN">123</div>
                         </div>
+                    </div>
+                    <div class="sorting-container">
+                        <label for="sortField">Rūšiuoti pagal:</label>
+                        <select class="form-select" id="sortField" style="width:auto;">
+                            <option value="none"> - </option>
+                            <option value="alphabet">Pavadinimas (A-Z/Z-A)</option>
+                            <option value="cost">Pragyvenimo išlaidos (↑/↓)</option>
+                            <option value="qs">QS Reitingas (↑/↓)</option>
+                        </select>
+                        <button type="button" class="btn btn-secondary btn-sm" id="toggleSortOrder">↑/↓</button>
                     </div>
                 </div>
             </div>

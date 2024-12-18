@@ -16,6 +16,8 @@ const db  = getFirestore(app);
 const reports = collection(db, "Reports");
 
 let all_universities = [];
+let sortField = "none";
+let sortAsc = true;
 
 function getCurrentUserID() {
     return "Nežinomas";
@@ -35,6 +37,11 @@ async function queryUniversities(filters) {
                     if (value !== "-") {
                         queriesArr.push(where(field, "==", value));
                     }
+                } else if (field === "qsRating") {
+                    let qsFilter = value;
+                    // qsFilter can be "1-300", "301-600", "601-900", "900+"
+                    // We'll handle QS rating filtering after we get the results (in code), since QS might not be numeric in DB directly.
+                    // We'll store this selection and filter after fetching.
                 } else {
                     queriesArr.push(where(field, "==", value));
                 }
@@ -136,70 +143,64 @@ async function fetchAllCountryData(countries) {
     return countryDataMap;
 }
 
-$(document).ready(async function () {
-    const emptyfilters = {
-        fakultetas: "-",
-        programa: "-",
-        studijuTipas: "-",
-        semestras: "-",
-        salis: "-",
-        miestas: "-",
-        regionas: "-",
-        universitetas: "-",
-        kalba: "-"
-    };
-    const res = await queryUniversities(emptyfilters);
-    all_universities = res;
-    if (res.length != 0){
-        await format_and_output(res);
-        find_unique_and_populate_html(res);
-    } else {
-        console.log("Failed getting query results !!!");
-    }
+function parseQSFilter(value, qsVal) {
+    if (!value || value === "-") return true; 
+    const qsNum = parseInt(qsVal === '-'? '9999999' : qsVal,10); 
+    if (value === "1-300") return qsNum >=1 && qsNum <=300;
+    if (value === "301-600") return qsNum>=301 && qsNum<=600;
+    if (value === "601-900") return qsNum>=601 && qsNum<=900;
+    if (value === "900+") return qsNum>=901;
+    return true;
+}
 
-    $('button.btn-primary').on('click',async function() {
-        const _fakultetas = $('#faculty').val() || "-";
-        const _programa = $('#program').val() || "-";
-        const _studijuTipas = $('#studyType').val() || "-";
-        const _semestras = $('#semester').val() || "-";
-        const _salis = $('#country').val() || "-";
-        const _miestas = $('#city').val() || "-";
-        const _regionas = $('#region').val() || "-";
-        const _universitetas = $('#university').val() || "-";
-        const _kalba = $('#language').val() || "-";
+function sortResults(univs) {
+    if (sortField === "none") return univs;
 
-        const filters = {
-            fakultetas: _fakultetas,
-            programa: _programa,
-            studijuTipas: _studijuTipas,
-            semestras: _semestras,
-            salis: _salis,
-            miestas: _miestas,
-            regionas: _regionas,
-            universitetas: _universitetas,
-            kalba: _kalba
-        };
-        const res = await queryUniversities(filters);
-        await format_and_output(res);
+    return univs.sort((a, b) => {
+        if (sortField === "alphabet") {
+            const nameA = a.universitetas.toLowerCase();
+            const nameB = b.universitetas.toLowerCase();
+            if (nameA < nameB) return sortAsc? -1 : 1;
+            if (nameA > nameB) return sortAsc? 1 : -1;
+            return 0;
+        } else if (sortField === "cost") {
+            const costA = parseInt(a.countryData.costOfLiving === '-' ? '9999999' : a.countryData.costOfLiving,10);
+            const costB = parseInt(b.countryData.costOfLiving === '-' ? '9999999' : b.countryData.costOfLiving,10);
+            if (costA < costB) return sortAsc? -1 : 1;
+            if (costA > costB) return sortAsc? 1 : -1;
+            return 0;
+        } else if (sortField === "qs") {
+            const qsA = parseInt(a.qs === '-'? '9999999': a.qs,10);
+            const qsB = parseInt(b.qs === '-'? '9999999': b.qs,10);
+            if (qsA < qsB) return sortAsc? -1 : 1;
+            if (qsA > qsB) return sortAsc? 1 : -1;
+            return 0;
+        }
+        return 0;
     });
-});
+}
 
 async function format_and_output(res){
     const out = $("#resOutput");
     out.empty();
 
     const livingCostsMax = parseInt($("#livingCosts").val() || "0", 10);
+    const qsFilterVal = $("#qsRating").val();
+
+    const filteredByQS = res.filter(u => {
+        return parseQSFilter(qsFilterVal, u.qs || '-');
+    });
 
     const filteredResults = [];
     const uniqueCountries = new Set();
 
-    for (let univ of res) {
+    for (let univ of filteredByQS) {
         if (univ.salis) uniqueCountries.add(univ.salis);
     }
 
     const countryDataMap = await fetchAllCountryData(Array.from(uniqueCountries));
 
-    for (let univ of res) {
+    for (let univ of filteredByQS) {
         const countryData = countryDataMap[univ.salis] || {costOfLiving:'-',rentCost:'-',scholarship:'-'};
         const costOfLivingVal = parseInt(countryData.costOfLiving === '-' ? "9999999" : countryData.costOfLiving,10);
         if (costOfLivingVal <= livingCostsMax) {
@@ -207,9 +208,11 @@ async function format_and_output(res){
         }
     }
 
-    $(".results-count").text(`Rezultatų: ${filteredResults.length}`);
+    const sorted = sortResults(filteredResults);
 
-    for (let u of filteredResults) {
+    $(".results-count").text(`Rezultatų: ${sorted.length}`);
+
+    for (let u of sorted) {
         const univ = u;
         const image = univ.imageUrl || 'https://via.placeholder.com/60';
         const countryCity = (univ.salis || '') + (univ.miestas ? ', ' + univ.miestas : '');
@@ -233,7 +236,7 @@ async function format_and_output(res){
                         <div class="university-details-column">
                             <h5>Fakultetas</h5>
                             <p>${univ.fakultetas || '-'}</p>
-                            <h5>Studijų sritis</h5>
+                            <h5>Studijų sritys</h5>
                             <p>${univ.sritis || '-'}</p>
                             <h5>Kalbos</h5>
                             <p>${langs}</p>
@@ -249,7 +252,7 @@ async function format_and_output(res){
                             <p>${rentCost}</p>
                             <h5>Stipendija</h5>
                             <p>${scholarship}</p>
-                            <h5 style="margin-top:1.5rem;">QS Įvertinimas</h5>
+                            <h5 style="margin-top:1.5rem;">QS Rank</h5>
                             <div class="qs-rank-badge">
                                 <div class="rank-num">${qs}</div>
                                 <span>Rank</span>
@@ -314,6 +317,70 @@ async function format_and_output(res){
         out.append(card);
     }
 }
+
+$(document).ready(async function () {
+    const emptyfilters = {
+        fakultetas: "-",
+        programa: "-",
+        studijuTipas: "-",
+        semestras: "-",
+        salis: "-",
+        miestas: "-",
+        regionas: "-",
+        universitetas: "-",
+        kalba: "-"
+    };
+    let res = await queryUniversities(emptyfilters);
+    all_universities = res;
+    if (res.length != 0){
+        await format_and_output(res);
+        find_unique_and_populate_html(res);
+    } else {
+        console.log("Failed getting query results !!!");
+    }
+
+    $('button.btn-primary').on('click',async function() {
+        const _fakultetas = $('#faculty').val() || "-";
+        const _programa = $('#program').val() || "-";
+        const _studijuTipas = $('#studyType').val() || "-";
+        const _semestras = $('#semester').val() || "-";
+        const _salis = $('#country').val() || "-";
+        const _miestas = $('#city').val() || "-";
+        const _regionas = $('#region').val() || "-";
+        const _universitetas = $('#university').val() || "-";
+        const _kalba = $('#language').val() || "-";
+        const _qsRating = $('#qsRating').val();
+
+        const filters = {
+            fakultetas: _fakultetas,
+            programa: _programa,
+            studijuTipas: _studijuTipas,
+            semestras: _semestras,
+            salis: _salis,
+            miestas: _miestas,
+            regionas: _regionas,
+            universitetas: _universitetas,
+            kalba: _kalba,
+            qsRating: _qsRating
+        };
+        const res = await queryUniversities(filters);
+        await format_and_output(res);
+    });
+
+    $('#sortField').on('change', function(){
+        sortField = $(this).val();
+        reSortAndDisplay();
+    });
+
+    $('#toggleSortOrder').on('click', function(){
+        sortAsc = !sortAsc;
+        reSortAndDisplay();
+    });
+
+    function reSortAndDisplay() {
+        format_and_output(all_universities);
+    }
+});
 
 async function fetchFaculties() {
     const querySnapshot = await getDocs(collection(db, 'VU_courses'));
