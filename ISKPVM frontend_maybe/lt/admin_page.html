@@ -87,13 +87,14 @@
 
         <!-- User Management -->
         <div class="profile-container">
-            <h2>Naudotojų valdymas</h2>
+            <h2>Naudotojų komentaru blokavimas</h2>
             <div class="admin-field">
                 <label for="userSearch">Paieška:</label>
                 <input type="text" class="form-control" id="userSearch" placeholder="Įveskite vartotojo id">
             </div>
+
             <div class="admin-field">
-                <button class="btn btn-primary" onclick="searchUsers()">Ieškoti</button>
+                <button id="block_user_comments" class="btn btn-primary">Ieškoti</button>
                 <div id="userList">
                    <!-- User list will be displayed here -->
                 </div>
