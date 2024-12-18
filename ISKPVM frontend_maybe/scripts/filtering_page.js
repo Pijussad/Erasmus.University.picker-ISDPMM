@@ -20,7 +20,7 @@ let sortField = "none";
 let sortAsc = true;
 
 function getCurrentUserID() {
-    return "Nežinomas";
+    return localStorage.getItem("userName") || "Nežinomas";
 }
 
 async function queryUniversities(filters) {
@@ -289,7 +289,7 @@ async function format_and_output(res){
                         kodas: universitetas,
                         message: userInput,
                         messageTime: serverTimestamp(),
-                        userId: "idk"
+                        userId: localStorage.getItem('userName') || "None"
                     }
                     await addDoc(collection(db, "Reports"), reportData);
                 }
