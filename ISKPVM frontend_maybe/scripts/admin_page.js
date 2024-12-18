@@ -1,6 +1,6 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getFirestore, collection, getDocs, query, where, doc, getDoc, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getFirestore, collection, getDocs, query, where, doc, getDoc, orderBy, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCDrG2mniJa9zEJMm6n4MGf6NLdWH4cbzM",
@@ -63,8 +63,49 @@ async function loadMessages() {
 }
 
 
+
+const commentsRef = collection(db, "Comments"); // Reference to the Comments collection
+
+async function updateCommentsForUser(userName) {
+  try {
+    const q = query(commentsRef, where("userID", "==", userName));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      console.log("No comments found for the specified user.");
+      return;
+    }
+
+    querySnapshot.forEach(async (commentDoc) => {
+      try {
+        const commentRef = doc(db, "Comments", commentDoc.id); // Reference to the specific document
+        await updateDoc(commentRef, {
+          allowed: false // Replace 'status' with the field you want to update
+        });
+        console.log(`Document ${commentDoc.id} updated successfully.`);
+      } catch (error) {
+        console.error(`Error updating document ${commentDoc.id}:`, error);
+      }
+    });
+
+    const userRef = doc(db, "Users", userName);
+    await updateDoc(userRef, {
+      isBlocked: true 
+    });
+  } catch (error) {
+    console.error("Error querying comments:", error);
+  }
+}
+
 $(document).ready(async function() {
     loadMessages();
+
+    const blockButton = $("#block_user_comments");
+    blockButton.on('click', function(){
+      const user = $('#userSearch').val()
+      console.log(user);
+      updateCommentsForUser(user);
+    });
 
 
     // ... (rest of your document.ready code) ...
