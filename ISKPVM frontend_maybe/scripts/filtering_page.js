@@ -254,7 +254,7 @@ async function format_and_output(res){
                             <p>${rentCost}</p>
                             <h5>Stipendija</h5>
                             <p>${scholarship}</p>
-                            <h5 style="margin-top:1.5rem;">QS Rank</h5>
+                            <h5 style="margin-top:1.5rem;">QS Įvertinimas</h5>
                             <div class="qs-rank-badge">
                                 <div class="rank-num">${qs}</div>
                                 <span>Rank</span>
