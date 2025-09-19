@@ -7,7 +7,7 @@
     <title>Study Selection</title>
     <link href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.0/dist/flatly/bootstrap.min.css" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <link rel="icon" href="/ISKPVM frontend_maybe/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/ISKPVM frontend_maybe/assets/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../style.css">
     <script type="module" src="../scripts/filtering_page.js"></script>
     <style>
@@ -38,6 +38,7 @@
             height: 60px;
             border-radius: 6px;
             object-fit: cover;
+            padding: 10px;
         }
         .university-card-content {
             margin-top: 10px;
@@ -137,6 +138,89 @@
             display: flex;
             gap: 1rem;
             align-items: center;
+            padding-left: 16px;
+        }
+
+        /* Login Popup Styles */
+        #loginPopup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .form {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            position: relative;
+        }
+
+        .form-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .input-container {
+            margin-bottom: 1rem;
+        }
+
+        .input-container input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .submit {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .submit:hover {
+            background-color: #0056b3;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .signup-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        #closeButton {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        #closeButton:hover {
+            color: #000;
         }
     </style>
 </head>
@@ -148,7 +232,7 @@
         <div class="buttons">
             <button class="btn btn-outline-info btn-sm duk">D.U.K</button>
             <a href="profilio_valdymas.html">
-                <button id="profilis" class="btn btn-info btn-sm">
+                <button id="profilis" class="btn btn-info btn-sm" style="display: none;">
                     <img width="16" height="16" src="https://img.icons8.com/forma-light/64/user.png" alt="user"/>
                 </button>
             </a>
@@ -156,9 +240,33 @@
         </div>
     </div>
 
+    <!-- Login Pop-Up -->
+    <div id="loginPopup">
+        <form class="form">
+            <button id="closeButton" type="button" class="" aria-label="Close">X</button>
+            <p class="form-title">Sign in to your account</p>
+             <div class="input-container">
+               <input type="text" placeholder="Enter username">
+               <span>
+               </span>
+           </div>
+           <div class="input-container">
+               <input type="password" placeholder="Enter password">
+             </div>
+              <button id="submitLogin" type="submit" class="submit">
+             Sign in
+           </button>
+     
+           <p class="signup-link">
+             No account?
+             <a href="">Sign up</a>
+           </p>
+        </form>
+      </div>
+
     <div class="container roboto-medium">
         <div id="filter-header">
-            <h5 class="roboto-regular">Pasirinkite „Erasmus“ studijų vietą ir/ar universitetą:</h5>
+            <h5 class="roboto-regular">Pasirinkite „Erasmus" studijų vietą ir/ar universitetą:</h5>
         </div>
         <form id="filters-form">
             <div class="form-container" id="filter-body">
@@ -224,7 +332,7 @@
                         <div class="form-group" style="flex: 1; padding-bottom: 0.5rem;">
                             <div class="form-label">
                                 <img class="filter-icon" src="https://img.icons8.com/?size=100&id=KuQXYVYhKuCb&format=png&color=61479a" alt="university"/>
-                                <label for="qsRating">QS įvertinimas</label>
+                                <label for="qsRating">QS Įvertinimas</label>
                             </div>
                             <select class="form-select" id="qsRating">
                                 <option selected>-</option>
@@ -235,7 +343,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="width: 49%;">
                         <div class="form-label">
                             <img class="filter-icon" src="https://img.icons8.com/?size=100&id=ldvZl2FZHpxr&format=png&color=61479a" alt="university"/>
                             <label for="livingCosts">Pragyvenimo išlaidos (mėn.)</label>
@@ -243,6 +351,7 @@
                         <div class="slider-container">
                             <input type="range" class="form-range" id="livingCosts" min="0" max="2000">
                             <div id="livingCostsN">123</div>
+                            <div>Eur</div>
                         </div>
                     </div>
                     <div class="sorting-container">
