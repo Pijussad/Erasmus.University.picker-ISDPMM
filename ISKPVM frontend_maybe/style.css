@@ -153,6 +153,7 @@ hr {
     margin-left: 1em;
     margin-right: 1em;
     border-style: solid;
+    z-index: -1;
 }
 
 .content-breaker {
@@ -294,7 +295,7 @@ body, html {
     font-size: 2.5rem;
     letter-spacing: -4%;
     margin-bottom: 1rem;
-    background: url('/ISKPVM\ frontend_maybe/assets/text-mask.png') 0 0 / cover no-repeat;
+    background: url('assets/text-mask.png') 0 0 / cover no-repeat;
     background-clip: text;
     background-size: 150%;
     color: transparent;
@@ -435,6 +436,20 @@ body, html {
       & .signup-link a {
         text-decoration: underline;
       }
+  }
+
+  #signupFields {
+    gap: 7px;
+    display: flex;
+    flex-direction: column;
+    margin: 25px 10px;
+    font-size: 0.875rem;
+    & select {
+        background-color: #fff;
+    }
+    & select:disabled {
+        background-color: #ecf0f1;
+    }
   }
   
 
